@@ -51,6 +51,7 @@
     "@types/cors": "^2.8.0",
     "@types/node": "^20.0.0",
     "@types/pino": "^7.0.5",
+    "@types/express-serve-static-core": "^4.19.0",
     "@types/express-rate-limit": "^6.0.0",
     "eslint": "^9.0.0",
     "vitest": "^1.6.0"

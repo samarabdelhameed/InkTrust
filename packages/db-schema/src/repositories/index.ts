@@ -5,45 +5,50 @@ export class UserRepository {
     return prisma.user.findUnique({ where: { proxyEmail: email } });
   }
 
+  async findById(id: string) {
+    return prisma.user.findUnique({ where: { id } });
+  }
+
   async createUser(data: { faxNumber: string; embeddedWalletAddress: string; proxyEmail?: string }) {
     return prisma.user.create({ data });
   }
 }
 
-export class MedicalRecordRepository {
-  async create(data: { userId: string; encryptedData: string; recordType: string }) {
-    return prisma.medicalRecord.create({ data: { ...data, hash: '', encryptionIv: '' } });
+export class FaxJobRepository {
+  async create(data: { userId: string; externalFaxId: string; mediaUrl?: string }) {
+    return prisma.faxJob.create({ data });
   }
 
-  async findByUserId(userId: string) {
-    return prisma.medicalRecord.findMany({ where: { userId } });
+  async findPending() {
+    return prisma.faxJob.findMany({ where: { status: 'RECEIVED' } });
+  }
+
+  async updateStatus(id: string, status: string) {
+    return prisma.faxJob.update({ where: { id }, data: { status: status as any } });
   }
 }
 
 export class TransactionRepository {
-  async create(data: { userId: string; amount: number; type: string; currency?: string }) {
-    return prisma.transactionRecord.create({ data: { ...data, type: data.type as any, currency: data.currency ?? 'JPY' } });
+  async create(data: { userId: string; faxJobId?: string; txSignature: string; amount: number }) {
+    return prisma.transaction.create({ data });
   }
 
   async updateStatus(id: string, status: string) {
-    return prisma.transactionRecord.update({ where: { id }, data: { status: status as any } });
+    return prisma.transaction.update({ where: { id }, data: { status: status as any } });
   }
 }
 
-export class AuditLogRepository {
-  async create(data: { action: string; resource: string; details?: any; actorId?: string }) {
-    return prisma.auditLog.create({ data });
+export class ApprovalRepository {
+  async create(data: { faxJobId: string; userId: string; expiresAt: Date }) {
+    return prisma.approvalRequest.create({ data });
   }
-}
 
-export class QueueJobRepository {
-  async create(data: { queueName: string; jobType: string; payload?: any }) {
-    return prisma.queueJob.create({ data });
+  async findByStatus(status: string) {
+    return prisma.approvalRequest.findMany({ where: { status: status as any } });
   }
 }
 
 export const userRepository = new UserRepository();
-export const medicalRecordRepository = new MedicalRecordRepository();
+export const faxJobRepository = new FaxJobRepository();
 export const transactionRepository = new TransactionRepository();
-export const auditLogRepository = new AuditLogRepository();
-export const queueJobRepository = new QueueJobRepository();
+export const approvalRepository = new ApprovalRepository();

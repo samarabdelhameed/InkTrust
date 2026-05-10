@@ -1,23 +1,7 @@
 import { prisma } from '../client';
-import { 
-  User, 
-  Job, 
-  FinancialTransaction, 
-  UserStatus, 
-  JobStatus, 
-  TxStatus, 
-  ApprovalStatus 
-} from '@prisma/client';
 
 export class DataService {
-  // ============================================================
-  // USER OPERATIONS
-  // ============================================================
-  async createUser(data: {
-    faxNumber: string;
-    embeddedWalletAddress: string;
-    proxyEmail?: string;
-  }) {
+  async createUser(data: { faxNumber: string; embeddedWalletAddress: string; proxyEmail?: string }) {
     return prisma.user.create({ data });
   }
 
@@ -25,62 +9,38 @@ export class DataService {
     return prisma.user.findUnique({ where: { embeddedWalletAddress: address } });
   }
 
-  // ============================================================
-  // AI JOB ORCHESTRATION
-  // ============================================================
-  async createAIJob(data: {
-    userId: string;
-    intentType: string;
-    intentHash: string;
-    priority?: number;
-  }) {
-    return prisma.job.create({
-      data: {
-        ...data,
-        status: 'PENDING',
-      }
+  async createAIJob(data: { userId: string; externalFaxId?: string; mediaUrl?: string }) {
+    return prisma.faxJob.create({
+      data: { ...data, status: 'RECEIVED' },
     });
   }
 
-  async updateJobStatus(jobId: string, status: JobStatus, aiSummary?: string, entities?: any) {
-    return prisma.job.update({
+  async updateJobStatus(jobId: string, status: string, aiSummary?: string, entities?: any) {
+    return prisma.faxJob.update({
       where: { id: jobId },
-      data: { 
-        status, 
-        aiSummary, 
-        extractedEntities: entities,
-        completedAt: status === 'COMPLETED' ? new Date() : null
-      }
+      data: { status: status as any, intent: aiSummary, aiRawResponse: entities, completedAt: status === 'COMPLETED' ? new Date() : undefined },
     });
   }
 
-  // ============================================================
-  // HYBRID TRANSACTION TRACKING
-  // ============================================================
   async recordTransaction(data: {
     userId: string;
-    jobId?: string;
+    faxJobId?: string;
+    txSignature: string;
     amount: number;
     currency?: string;
-    paymentProvider: string;
-    txSignature?: string;
   }) {
-    return prisma.financialTransaction.create({
+    return prisma.transaction.create({
       data: {
         userId: data.userId,
-        jobId: data.jobId,
+        faxJobId: data.faxJobId,
+        txSignature: data.txSignature,
         amount: data.amount,
         currency: data.currency || 'SOL',
-        paymentProvider: data.paymentProvider,
-        txSignature: data.txSignature,
-        status: data.txSignature ? 'CONFIRMED' : 'PENDING'
-      }
+        status: 'CONFIRMED',
+      },
     });
   }
 
-  // ============================================================
-  // AUDIT & LOGGING
-  // ============================================================
   async logAuditEvent(data: {
     action: string;
     entityType: string;
@@ -88,20 +48,14 @@ export class DataService {
     actorId?: string;
     details?: any;
   }) {
-    return prisma.auditLog.create({ data });
-  }
-
-  // ============================================================
-  // FILE ARTIFACT TRACKING
-  // ============================================================
-  async trackFileArtifact(data: {
-    userId: string;
-    jobId?: string;
-    s3Key: string;
-    artifactType: string;
-    mimeType: string;
-  }) {
-    return prisma.fileArtifact.create({ data });
+    return prisma.auditReview.create({
+      data: {
+        faxJobId: data.entityId,
+        riskScore: 0,
+        moderatorAction: data.action,
+        moderatorNotes: data.details ? JSON.stringify(data.details) : undefined,
+      },
+    });
   }
 }
 

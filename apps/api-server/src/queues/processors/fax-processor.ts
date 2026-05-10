@@ -2,33 +2,30 @@ import { Job } from 'bullmq';
 import { prisma } from '../../lib/prisma';
 import { logger } from '../../lib/logger';
 import { geminiService } from '../../services/ai/gemini.service';
-import axios from 'axios';
 
 export const faxProcessor = async (job: Job) => {
   const { jobId, mediaUrl } = job.data;
-  
+
   logger.info({ jobId }, 'Processing fax job');
 
   try {
+    const faxJob = await prisma.faxJob.findUnique({ where: { id: jobId } });
+    if (!faxJob) throw new Error(`FaxJob ${jobId} not found`);
+
     await prisma.faxJob.update({
       where: { id: jobId },
       data: { status: 'PROCESSING' },
     });
 
-    let aiResult;
+    let aiResult: any = { intent: 'manual_review_required', urgency: 'HIGH' };
     if (mediaUrl) {
-      // Download media
+      const { default: axios } = await import('axios');
       const response = await axios.get(mediaUrl, { responseType: 'arraybuffer' });
       const buffer = Buffer.from(response.data, 'binary');
-      
-      // AI Parse
       aiResult = await geminiService.parseFaxIntent(buffer);
-    } else {
-      aiResult = { intent: 'manual_review_required', urgency: 'HIGH' };
     }
 
-    // Store Result
-    const updatedJob = await prisma.faxJob.update({
+    await prisma.faxJob.update({
       where: { id: jobId },
       data: {
         intent: aiResult.intent,
@@ -39,23 +36,7 @@ export const faxProcessor = async (job: Job) => {
         aiRawResponse: aiResult,
         status: 'AWAITING_APPROVAL',
       },
-      include: { user: true },
     });
-
-    // Check if approval is needed (e.g., amount > spending limit)
-    if (updatedJob.amount && updatedJob.user.spendingLimit) {
-      if (Number(updatedJob.amount) > Number(updatedJob.user.spendingLimit)) {
-        logger.info({ jobId }, 'Approval required: spending limit exceeded');
-        // Create Approval Request
-        await prisma.approvalRequest.create({
-          data: {
-            faxJobId: jobId,
-            userId: updatedJob.userId,
-            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
-          },
-        });
-      }
-    }
 
     return aiResult;
   } catch (error) {
@@ -63,7 +44,7 @@ export const faxProcessor = async (job: Job) => {
     await prisma.faxJob.update({
       where: { id: jobId },
       data: { status: 'FAILED' },
-    });
+    }).catch(() => {});
     throw error;
   }
 };

@@ -2,6 +2,8 @@ import {
   createSolanaRpc,
   createSolanaRpcSubscriptions,
   address,
+  type Base64EncodedWireTransaction,
+  type Signature,
 } from "@solana/kit";
 import { Connection } from "@solana/web3.js";
 import { env } from "../config/env";
@@ -32,12 +34,12 @@ export class SolanaKitService {
   }
 
   async sendTransaction(wireTx: string): Promise<string> {
-    const sig = await this.rpc.sendTransaction(wireTx).send();
-    return sig;
+    const sig = await this.rpc.sendTransaction(wireTx as Base64EncodedWireTransaction).send();
+    return sig as unknown as string;
   }
 
   async monitorSignature(signature: string) {
-    const sig = await this.rpc.getSignatureStatuses([signature]).send();
+    const sig = await this.rpc.getSignatureStatuses([signature as Signature]).send();
     return sig.value[0];
   }
 

@@ -1,30 +1,22 @@
 import { prisma } from '../client';
-import { userRepository, transactionRepository, medicalRecordRepository, auditLogRepository, queueJobRepository } from '../repositories';
+import { userRepository, faxJobRepository, transactionRepository, approvalRepository } from '../repositories';
 
 export class DatabaseService {
   readonly users = userRepository;
+  readonly faxJobs = faxJobRepository;
   readonly transactions = transactionRepository;
-  readonly medicalRecords = medicalRecordRepository;
-  readonly audits = auditLogRepository;
-  readonly queues = queueJobRepository;
+  readonly approvals = approvalRepository;
 
-  async logAIInteraction(data: { prompt: string; response?: string; modelUsed: string; executionTimeMs?: number }) {
-    return prisma.aILog.create({ data });
+  async logMCPExecution(data: { faxJobId: string; toolName: string; input: any; output?: any; status: string; durationMs: number }) {
+    return prisma.mCPExecutionLog.create({ data });
   }
 
-  async createAuditLog(data: { action: string; entityType: string; entityId: string; actorId?: string; details?: any }) {
-    return prisma.auditLog.create({ data: { action: data.action, resource: data.entityType, resourceId: data.entityId, actorId: data.actorId, details: data.details } });
+  async createAuditReview(data: { faxJobId: string; riskScore: number; moderatorAction?: string; moderatorNotes?: string }) {
+    return prisma.auditReview.create({ data });
   }
 
-  async trackQueueJob(data: { queueName: string; jobType: string; payload?: any }) {
-    return queueJobRepository.create(data);
-  }
-
-  async updateQueueJob(jobId: string, status: string, error?: string) {
-    return prisma.queueJob.update({
-      where: { id: jobId },
-      data: { status: status as any, error },
-    });
+  async createVerification(data: { userId: string; nullifierHash: string; merkleRoot: string; proof: string }) {
+    return prisma.worldIdVerification.create({ data });
   }
 }
 

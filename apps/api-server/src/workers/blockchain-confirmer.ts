@@ -12,11 +12,8 @@ export const transactionConfirmationWorker = new Worker(
     const { transactionId, signature } = job.data;
     logger.info({ transactionId, signature }, 'Confirming blockchain transaction');
 
-    const tx = await dataSyncService.syncTransactionToChain({
+    await dataSyncService.syncTransaction({
       id: transactionId,
-      userId: '',
-      amount: 0,
-      currency: 'SOL',
       txSignature: signature,
     });
 
