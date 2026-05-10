@@ -10,7 +10,7 @@ pub struct ApproveFaxRequest<'info> {
         mut,
         seeds = [SEED_FAX_REQUEST, fax_request.owner.as_ref(), fax_request.intent_hash.as_ref()],
         bump = fax_request.bump,
-        constraint = fax_request.caregiver == caregiver.key() @ InktrustError::InvalidCaregiver
+        constraint = fax_request.caregiver_pubkey == caregiver.key() @ InktrustError::InvalidCaregiver
     )]
     pub fax_request: Account<'info, FaxRequestState>,
     

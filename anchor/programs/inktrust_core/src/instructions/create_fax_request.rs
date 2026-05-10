@@ -29,7 +29,7 @@ pub fn handler(ctx: Context<CreateFaxRequest>, amount: u64, intent_hash: [u8; 32
     let clock = Clock::get()?;
 
     fax_request.owner = ctx.accounts.owner.key();
-    fax_request.caregiver = ctx.accounts.caregiver.key();
+    fax_request.caregiver_pubkey = ctx.accounts.caregiver.key();
     fax_request.amount = amount;
     fax_request.intent_hash = intent_hash;
     fax_request.is_approved = false;
@@ -41,7 +41,7 @@ pub fn handler(ctx: Context<CreateFaxRequest>, amount: u64, intent_hash: [u8; 32
     emit!(FaxRequestCreated {
         fax_request: fax_request.key(),
         owner: fax_request.owner,
-        caregiver: fax_request.caregiver,
+        caregiver: fax_request.caregiver_pubkey,
         amount: fax_request.amount,
         intent_hash: fax_request.intent_hash,
         timestamp: clock.unix_timestamp,

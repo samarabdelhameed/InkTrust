@@ -7,307 +7,101 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ============================================================
+// 1. USERS & IDENTITY
+// ============================================================
 model User {
-  id              String   @id @default(uuid())
-  faxNumber       String   @unique @map("fax_number")
-  proxyEmail      String   @unique @map("proxy_email")
-  embeddedWallet  String   @unique @map("embedded_wallet")
-  dailySpendLimit Int      @default(3000) @map("daily_spend_limit")
-  isActive        Boolean  @default(true) @map("is_active")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id                      String    @id @default(uuid())
+  faxNumber               String    @unique
+  proxyEmail              String?   @unique
+  embeddedWalletAddress   String    @unique
+  caregiverWalletAddress  String?
+  worldIdVerified         Boolean   @default(false)
+  spendingLimit           Decimal   @default(0.0) @db.Decimal(18, 8)
+  accountStatus           UserStatus @default(ACTIVE)
+  onboardingCompleted     Boolean   @default(false)
+  
+  lastActivityAt          DateTime  @default(now())
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  deletedAt               DateTime?
 
-  caregivers      Caregiver[]
-  faxRequests     FaxRequest[]
-  trustedContacts TrustedContact[]
-  roles           UserRole[]
-  medicalRecords  MedicalRecord[]
-  transactions    TransactionRecord[]
-  auditEntries    AuditLog[]
-  approvals       ApprovalWorkflow[]
+  // Relations
+  trustedContacts         TrustedContact[]
+  jobs                    Job[]
+  medicalRecords          MedicalRecord[]
+  transactions            FinancialTransaction[]
+  agentIdentities         AgentIdentity[]
+  artifacts               FileArtifact[]
+  approvals               Approval[]
 
-  @@map("users")
+  @@index([embeddedWalletAddress])
+  @@index([faxNumber])
 }
 
-model Caregiver {
-  id            String        @id @default(uuid())
-  userId        String        @map("user_id")
-  walletAddress String        @map("wallet_address")
-  name          String
-  phone         String
-  role          CaregiverRole @default(PRIMARY)
-  createdAt     DateTime      @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("caregivers")
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  UNDER_REVIEW
+  DELETED
 }
 
-model FaxRequest {
-  id            String        @id @default(uuid())
-  userId        String        @map("user_id")
-  status        RequestStatus @default(RECEIVED)
-  faxMediaUrl   String        @map("fax_media_url")
-  aiIntent      Json?         @map("ai_intent")
-  onchainPda    String?       @map("onchain_pda")
-  blinkUrl      String?       @map("blink_url")
-  amountJpy     Int?          @map("amount_jpy")
-  txSignature   String?       @map("tx_signature")
-  createdAt     DateTime      @default(now()) @map("created_at")
-  updatedAt     DateTime      @updatedAt @map("updated_at")
-
-  user            User              @relation(fields: [userId], references: [id])
-  aiLogs          AiProcessingLog[]
-  approvals       ApprovalWorkflow[]
-  auditEntries    AuditLog[]
-
-  @@map("fax_requests")
-}
-
+// ============================================================
+// 2. PHISHING-RESISTANT TRUSTED CONTACTS
+// ============================================================
 model TrustedContact {
-  id           String @id @default(uuid())
-  userId       String @map("user_id")
-  email        String
-  name         String
-  relationship String
-  createdAt    DateTime @default(now()) @map("created_at")
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  contactEmail    String
+  relationship    String
+  trustLevel      Int      @default(1)
+  isVerified      Boolean  @default(false)
+  publicKey       String?  // Optional on-chain identity
+  createdAt       DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id])
-
-  @@map("trusted_contacts")
+  @@unique([userId, contactEmail])
 }
 
-model AuditLog {
-  id             String   @id @default(uuid())
-  actorId        String?  @map("actor_id")
-  faxRequestId   String?  @map("fax_request_id")
-  email          String?
-  action         String
-  resource       String
-  resourceId     String?  @map("resource_id")
-  details        Json?
-  ipAddress      String?  @map("ip_address")
-  userAgent      String?  @map("user_agent")
-  createdAt      DateTime @default(now()) @map("created_at")
+// ============================================================
+// 3. AI ORCHESTRATION & JOBS
+// ============================================================
+model Job {
+  id                String      @id @default(uuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id])
+  intentType        String
+  intentHash        String      @unique // Links to Solana PDA
+  aiSummary         String?     @db.Text
+  extractedEntities Json?
+  confidenceScore   Float?
+  status            JobStatus   @default(PENDING)
+  priority          Int         @default(0)
+  requiresApproval  Boolean     @default(true)
+  approvalStatus    ApprovalStatus @default(PENDING)
+  
+  queueId           String?     // BullMQ Job ID
+  retryCount        Int         @default(0)
+  
+  createdAt         DateTime    @default(now())
+  completedAt       DateTime?
 
-  faxRequest FaxRequest? @relation(fields: [faxRequestId], references: [id])
-  user       User?       @relation(fields: [actorId], references: [id])
+  // Relations
+  reviews           HumanReview[]
+  transactions      FinancialTransaction[]
+  artifacts         FileArtifact[]
+  approvals         Approval[]
 
-  @@index([actorId])
-  @@index([faxRequestId])
-  @@index([action])
-  @@index([createdAt])
-  @@map("audit_logs")
-}
-
-model AiProcessingLog {
-  id           String   @id @default(uuid())
-  faxRequestId String   @map("fax_request_id")
-  model        String   @default("gemini-2.0-flash")
-  promptTokens Int?     @map("prompt_tokens")
-  outputTokens Int?     @map("output_tokens")
-  confidence   Float?
-  rawResponse  Json?
-  intent       Json?
-  error        String?
-  processingMs Int?     @map("processing_ms")
-  createdAt    DateTime @default(now()) @map("created_at")
-
-  faxRequest FaxRequest @relation(fields: [faxRequestId], references: [id])
-
-  @@index([faxRequestId])
-  @@index([createdAt])
-  @@map("ai_processing_logs")
-}
-
-model QueueJob {
-  id         String   @id @default(uuid())
-  queueName  String   @map("queue_name")
-  jobType    String   @map("job_type")
-  payload    Json?
-  status     JobStatus @default(PENDING)
-  priority   Int      @default(0)
-  retryCount Int      @default(0) @map("retry_count")
-  maxRetries Int      @default(3) @map("max_retries")
-  scheduledAt DateTime? @map("scheduled_at")
-  startedAt   DateTime? @map("started_at")
-  completedAt DateTime? @map("completed_at")
-  error       String?
-  result      Json?
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  @@index([queueName])
-  @@index([status])
-  @@index([scheduledAt])
-  @@map("queue_jobs")
-}
-
-model UserRole {
-  id     String @id @default(uuid())
-  userId String @map("user_id")
-  role   Role   @default(VIEWER)
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@unique([userId, role])
-  @@map("user_roles")
-}
-
-model MedicalRecord {
-  id            String    @id @default(uuid())
-  userId        String    @map("user_id")
-  recordType    String    @map("record_type")
-  encryptedData  String   @map("encrypted_data")
-  encryptionIv  String    @map("encryption_iv")
-  hash          String
-  fileName      String?   @map("file_name")
-  mimeType      String?   @map("mime_type")
-  s3Key         String?   @map("s3_key")
-  fileSize      Int?      @map("file_size")
-  expiresAt     DateTime? @map("expires_at")
-  createdAt     DateTime  @default(now()) @map("created_at")
-  updatedAt     DateTime  @updatedAt @map("updated_at")
-
-  user User @relation(fields: [userId], references: [id])
-
-  @@index([userId])
-  @@index([recordType])
-  @@map("medical_records")
-}
-
-model TransactionRecord {
-  id             String            @id @default(uuid())
-  userId         String            @map("user_id")
-  faxRequestId   String?           @map("fax_request_id")
-  type           TransactionType
-  amount         Int
-  currency       String            @default("JPY")
-  status         TransactionStatus @default(PENDING)
-  source         String?
-  destination    String?
-  txSignature    String?           @map("tx_signature")
-  providerRef    String?           @map("provider_ref")
-  metadata       Json?
-  confirmedAt    DateTime?         @map("confirmed_at")
-  createdAt      DateTime          @default(now()) @map("created_at")
-  updatedAt      DateTime          @updatedAt @map("updated_at")
-
-  user        User         @relation(fields: [userId], references: [id])
-  faxRequest  FaxRequest?  @relation(fields: [faxRequestId], references: [id])
-
-  @@index([userId])
-  @@index([faxRequestId])
-  @@index([type])
-  @@index([status])
-  @@map("transaction_records")
-}
-
-model SponsorPayment {
-  id             String               @id @default(uuid())
-  sponsorId      String               @map("sponsor_id")
-  beneficiaryId  String               @map("beneficiary_id")
-  amount         Int
-  currency       String               @default("JPY")
-  frequency      PaymentFrequency
-  status         SponsorPaymentStatus @default(ACTIVE)
-  startDate      DateTime             @map("start_date")
-  endDate        DateTime?            @map("end_date")
-  lastProcessedAt DateTime?            @map("last_processed_at")
-  providerRef    String?              @map("provider_ref")
-  metadata       Json?
-  createdAt      DateTime             @default(now()) @map("created_at")
-  updatedAt      DateTime             @updatedAt @map("updated_at")
-
-  @@index([sponsorId])
-  @@index([beneficiaryId])
-  @@index([status])
-  @@map("sponsor_payments")
-}
-
-model ApprovalWorkflow {
-  id            String         @id @default(uuid())
-  faxRequestId  String         @map("fax_request_id")
-  approverId    String         @map("approver_id")
-  status        ApprovalStatus @default(PENDING)
-  signature     String?
-  signedAt      DateTime?      @map("signed_at")
-  expiresAt     DateTime?      @map("expires_at")
-  reminderSent  Boolean        @default(false) @map("reminder_sent")
-  metadata      Json?
-  createdAt     DateTime       @default(now()) @map("created_at")
-  updatedAt     DateTime       @updatedAt @map("updated_at")
-
-  faxRequest FaxRequest @relation(fields: [faxRequestId], references: [id])
-  user       User       @relation(fields: [approverId], references: [id])
-
-  @@unique([faxRequestId, approverId])
-  @@index([faxRequestId])
-  @@index([approverId])
-  @@index([status])
-  @@map("approval_workflows")
-}
-
-enum CaregiverRole {
-  PRIMARY
-  SECONDARY
-}
-
-enum RequestStatus {
-  RECEIVED
-  AI_PROCESSING
-  INTENT_EXTRACTED
-  WAITING_APPROVAL
-  APPROVED
-  EXECUTING
-  EXECUTED
-  FAILED
-  CLOSED
+  @@index([userId, status])
 }
 
 enum JobStatus {
   PENDING
-  ACTIVE
-  DELAYED
+  PROCESSING
+  AWAITING_APPROVAL
+  EXECUTING
   COMPLETED
   FAILED
-  CANCELLED
-}
-
-enum Role {
-  ADMIN
-  CAREGIVER
-  VIEWER
-}
-
-enum TransactionType {
-  FAX_PURCHASE
-  SPONSOR_PAYMENT
-  GAS_FEE
-  REFUND
-  WITHDRAWAL
-  DEPOSIT
-}
-
-enum TransactionStatus {
-  PENDING
-  CONFIRMED
-  FAILED
-  REFUNDED
-}
-
-enum PaymentFrequency {
-  MONTHLY
-  QUARTERLY
-  ANNUAL
-  ONE_TIME
-}
-
-enum SponsorPaymentStatus {
-  ACTIVE
-  PAUSED
-  CANCELLED
-  EXPIRED
 }
 
 enum ApprovalStatus {
@@ -315,5 +109,150 @@ enum ApprovalStatus {
   APPROVED
   REJECTED
   EXPIRED
-  ESCALATED
+}
+
+// ============================================================
+// 4. HUMAN-IN-THE-LOOP & AUDIT
+// ============================================================
+model HumanReview {
+  id              String   @id @default(uuid())
+  jobId           String
+  job             Job      @relation(fields: [jobId], references: [id])
+  flagReason      String?
+  riskScore       Float?
+  operatorAction  String?
+  operatorNotes   String?  @db.Text
+  escalationLevel Int      @default(0)
+  reviewedBy      String?
+  reviewedAt      DateTime?
+}
+
+// ============================================================
+// 5. HYBRID FINANCIAL TRANSACTIONS
+// ============================================================
+model FinancialTransaction {
+  id                String    @id @default(uuid())
+  userId            String
+  user              User      @relation(fields: [userId], references: [id])
+  jobId             String?
+  job               Job?      @relation(fields: [jobId], references: [id])
+  
+  txSignature       String?   @unique // Solana Signature
+  blockchainNetwork String    @default("devnet")
+  tokenMint         String?   // SPL Token Mint Address
+  paymentProvider   String?   // e.g., "solana", "stripe", "virtual-card"
+  virtualCardId     String?
+  
+  status            TxStatus  @default(PENDING)
+  amount            Decimal   @db.Decimal(18, 8)
+  currency          String    @default("SOL")
+  gasFees           Decimal?  @db.Decimal(18, 8)
+  executedAt        DateTime?
+  
+  createdAt         DateTime  @default(now())
+
+  @@index([txSignature])
+  @@index([userId, status])
+}
+
+enum TxStatus {
+  PENDING
+  CONFIRMED
+  FAILED
+  REVERSED
+}
+
+// ============================================================
+// 6. AI AGENT REGISTRY
+// ============================================================
+model AgentIdentity {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  metaplexAssetId String?  @unique // Metaplex Core Asset ID
+  embeddedWallet  String   @unique
+  executionScope  Json?    // Define what the agent can do
+  sponsorPermissions Json?
+  policyEngineId  String?
+  activeStatus    Boolean  @default(true)
+  lastExecutionAt DateTime?
+}
+
+// ============================================================
+// 7. FILE ARTIFACTS (S3)
+// ============================================================
+model FileArtifact {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  jobId           String?
+  job             Job?     @relation(fields: [jobId], references: [id])
+  
+  s3Key           String   @unique
+  artifactType    String   // e.g., "FAX_IMAGE", "AI_REPORT", "RECEIPT"
+  mimeType        String
+  encryptionStatus Boolean  @default(false)
+  uploadedAt      DateTime @default(now())
+}
+
+// ============================================================
+// 8. POLICY & APPROVAL ORCHESTRATION
+// ============================================================
+model Approval {
+  id                String         @id @default(uuid())
+  jobId             String
+  job               Job            @relation(fields: [jobId], references: [id])
+  userId            String
+  user              User           @relation(fields: [userId], references: [id])
+  
+  policyType        String         // e.g., "THRESHOLD", "WHITELIST"
+  requiredSigners   Int            @default(1)
+  receivedSigners   Int            @default(0)
+  approvalDeadline  DateTime?
+  nonceAccount      String?        // Durable Nonce Account Pubkey
+  
+  status            ApprovalStatus @default(PENDING)
+  finalizedAt       DateTime?
+  createdAt         DateTime       @default(now())
+}
+
+// Existing model migration/update
+model MedicalRecord {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  encryptedData   String
+  documentType    String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AILog {
+  id              String   @id @default(uuid())
+  prompt          String
+  response        String?
+  modelUsed       String
+  executionTimeMs Int?
+  createdAt       DateTime @default(now())
+}
+
+model AuditLog {
+  id              String   @id @default(uuid())
+  action          String
+  entityType      String
+  entityId        String
+  actorId         String?
+  timestamp       DateTime @default(now())
+  details         Json?
+}
+
+model QueueJob {
+  id              String   @id @default(uuid())
+  queueName       String
+  jobId           String   @unique
+  status          String
+  data            Json
+  error           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }

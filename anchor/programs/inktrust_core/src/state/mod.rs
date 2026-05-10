@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 #[derive(InitSpace)]
 pub struct FaxRequestState {
     pub owner: Pubkey,
-    pub caregiver: Pubkey,
+    pub caregiver_pubkey: Pubkey,
     pub amount: u64,
     pub intent_hash: [u8; 32],
     pub is_approved: bool,
