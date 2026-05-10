@@ -433,6 +433,54 @@ The AI agent compiles all results into a senior-friendly printed document.
 
 ---
 
+## Smart Contract Design (Trust & Authorization Layer)
+
+The Solana Programs for InkTrust are built using the **Anchor framework**. The architectural goal of the contracts is not to process AI data, but to act as a **Decentralized Policy Engine** to manage trust, authorization, and protect elderly users from fraud via Program Derived Addresses (PDAs).
+
+The smart contract design is divided into three main components:
+
+### 1. Program State & PDAs
+
+In Solana, smart contracts do not store data internally; they store it in separate accounts. To secure every fax request that requires financial approval, we designed a `FaxRequestState` struct using the `#[account]` macro:
+
+```rust
+#[account]
+#[derive(InitSpace)]
+pub struct FaxRequestState {
+    pub owner: Pubkey,            // 32 bytes: Senior's wallet (fax sender)
+    pub caregiver: Pubkey,        // 32 bytes: Caregiver's wallet (authorized approver)
+    pub amount: u64,              // 8 bytes: Transaction amount (lamports)
+    pub intent_hash: [u8; 32],    // 32 bytes: Encrypted fingerprint of the request (Arcium)
+    pub is_approved: bool,        // 1 byte: Approval status (starts as false)
+}
+```
+
+> **Engineering Note:** We use the `InitSpace` macro to precisely calculate the space required for the account upon initialization, plus the 8-byte Anchor Discriminator, to accurately determine Rent exemption costs.
+
+### 2. Instruction Handlers
+
+Our custom smart contract consists of 4 primary instructions that manage the lifecycle of a financial fax request:
+
+1. **`initialize_request`**: When Gemini reads a fax and detects a purchase request exceeding the spending limit, the agent invokes this instruction to create a new PDA for the request. We use the `init` constraint specifying the `payer` and `space`.
+2. **`approve_request`**: When the caregiver taps the Solana Blink link on their phone, this instruction is invoked to set `is_approved` to `true`. We use the `mut` constraint to allow safe modification of the PDA data.
+3. **`execute_purchase`**: This is the execution step. The contract rejects moving any funds (CASH or USDC) unless `is_approved == true`. Upon execution, we perform a **Cross-Program Invocation (CPI)** to the SPL Token Program to handle the transfer.
+4. **`close_request`**: To optimize state compression and conserve user resources, we use the `close = owner` constraint in Anchor to close the PDA after the transaction is completed and reclaim the Rent for the senior's wallet.
+
+### 3. Advanced Solana Composability
+
+To prove production-readiness, the smart contract integrates advanced Solana technologies through Composability (CPIs to sponsor contracts):
+
+* **Swig On-chain Policy Engine**: Alongside our custom contracts, we leverage the Swig SDK to enforce Delegated Execution and gasless payments. A smart policy is programmed into Swig wallets setting a daily spending limit, automatically protecting the senior.
+* **Arcium Confidentiality**: We use Arcium to encrypt sensitive medical or financial data (stored as `intent_hash` on-chain), ensuring the senior's privacy is preserved.
+* **Squads Multisig (Altitude)**: For massive transactions or critical medical accounts, the contract can require multi-party approval (e.g., Caregiver + Doctor) using Squads Multisig.
+* **System Program (Durable Nonces)**: Because the fax workflow is slow (hours between sending and returning an approval), a standard transaction would fail due to blockhash expiration. We integrate **Durable Nonces** to prepare the transaction and keep it valid for offline signing whenever the senior is ready.
+* **World IDKit**: We link the AI agent's wallet to a zk-proof of humanity to guarantee that fax requests originate from an authorized human, preventing bot impersonation.
+* **Coinbase x402 Protocol**: Allows the AI agent to pay API fees (like Telnyx fax fees or premium search APIs) using stablecoin micropayments.
+
+> **Pitch Secret for Judges:** *"In InkTrust, AI can hallucinate, but the smart contract cannot. We designed the Anchor contract as The Last Line of Defense. Even if the AI agent makes a mistake, the request PDA will stop it, Durable Nonces will hold it, and the Swig policy engine will reject execution until explicit caregiver approval arrives. We use Solana as an impenetrable security layer for the analog world."*
+
+---
+
 ## Architecture
 
 ```
