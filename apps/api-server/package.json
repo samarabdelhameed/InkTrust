@@ -25,9 +25,12 @@
     "telnyx": "^2.0.0",
     "zod": "^3.23.0",
     "cors": "^2.8.5",
+    "pino": "^9.1.0",
+    "pino-pretty": "^11.0.0",
     "helmet": "^7.1.0",
-    "dotenv": "^16.4.0",
-    "@worldcoin/idkit-core": "^1.1.0",
+    "express-rate-limit": "^7.2.0",
+    "envalid": "^8.0.0",
+    "cors-gate": "^1.1.1",
     "db-schema": "workspace:*",
     "shared-types": "workspace:*"
   },
@@ -37,6 +40,8 @@
     "@types/express": "^4.17.0",
     "@types/cors": "^2.8.0",
     "@types/node": "^20.0.0",
+    "@types/pino": "^7.0.5",
+    "@types/express-rate-limit": "^6.0.0",
     "eslint": "^9.0.0"
   }
 }

@@ -1,0 +1,35 @@
+model SponsorPayment {
+  id              String               @id @default(uuid())
+  sponsorId       String               @map("sponsor_id")
+  beneficiaryId   String               @map("beneficiary_id")
+  amount          Int
+  currency        String               @default("JPY")
+  frequency       PaymentFrequency
+  status          SponsorPaymentStatus @default(ACTIVE)
+  startDate       DateTime             @map("start_date")
+  endDate         DateTime?            @map("end_date")
+  lastProcessedAt DateTime?            @map("last_processed_at")
+  providerRef     String?              @map("provider_ref")
+  metadata        Json?
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@index([sponsorId])
+  @@index([beneficiaryId])
+  @@index([status])
+  @@map("sponsor_payments")
+}
+
+enum PaymentFrequency {
+  MONTHLY
+  QUARTERLY
+  ANNUAL
+  ONE_TIME
+}
+
+enum SponsorPaymentStatus {
+  ACTIVE
+  PAUSED
+  CANCELLED
+  EXPIRED
+}

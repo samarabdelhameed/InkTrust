@@ -1,0 +1,21 @@
+model MedicalRecord {
+  id            String    @id @default(uuid())
+  userId        String    @map("user_id")
+  recordType    String    @map("record_type")
+  encryptedData  String   @map("encrypted_data")
+  encryptionIv  String    @map("encryption_iv")
+  hash          String
+  fileName      String?   @map("file_name")
+  mimeType      String?   @map("mime_type")
+  s3Key         String?   @map("s3_key")
+  fileSize      Int?      @map("file_size")
+  expiresAt     DateTime? @map("expires_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([recordType])
+  @@map("medical_records")
+}

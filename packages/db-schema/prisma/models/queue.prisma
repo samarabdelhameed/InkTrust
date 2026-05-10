@@ -1,0 +1,31 @@
+model QueueJob {
+  id         String   @id @default(uuid())
+  queueName  String   @map("queue_name")
+  jobType    String   @map("job_type")
+  payload    Json?
+  status     JobStatus @default(PENDING)
+  priority   Int      @default(0)
+  retryCount Int      @default(0) @map("retry_count")
+  maxRetries Int      @default(3) @map("max_retries")
+  scheduledAt DateTime? @map("scheduled_at")
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+  error       String?
+  result      Json?
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  @@index([queueName])
+  @@index([status])
+  @@index([scheduledAt])
+  @@map("queue_jobs")
+}
+
+enum JobStatus {
+  PENDING
+  ACTIVE
+  DELAYED
+  COMPLETED
+  FAILED
+  CANCELLED
+}

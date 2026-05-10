@@ -1,21 +1,26 @@
 import express from "express";
-import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
+import { env } from "./config/env";
+import { logger } from "./utils/logger";
+import rateLimit from "express-rate-limit";
+import { createCorsMiddleware } from "./middleware/cors";
 import { setupWebSockets } from "./websocket";
 import { setupQueues } from "./queues";
 import apiRoutes from "./api";
 
-dotenv.config();
-
 const app = express();
-const PORT = process.env.PORT || 3001;
+const PORT = env.PORT;
 
-// ============================================================
-// Enterprise Middleware
-// ============================================================
 app.use(helmet());
-app.use(cors({ origin: process.env.NEXT_PUBLIC_APP_URL }));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: "Too many requests from this IP, please try again after 15 minutes",
+});
+app.use("/api/", limiter);
+
+app.use(createCorsMiddleware());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.raw({ type: "application/pdf", limit: "50mb" }));
 
@@ -42,13 +47,13 @@ async function startServer() {
     await setupQueues();
 
     const server = app.listen(PORT, () => {
-      console.log(`[Server] 🖋️ InkTrust API running on port ${PORT}`);
+      logger.info(`[Server] 🖋️ InkTrust API running on port ${PORT} in ${env.NODE_ENV} mode`);
     });
 
     // Initialize WebSockets
     setupWebSockets(server);
   } catch (error) {
-    console.error("[Server] ❌ Initialization failed:", error);
+    logger.error({ err: error }, "[Server] ❌ Initialization failed");
     process.exit(1);
   }
 }

@@ -1,0 +1,19 @@
+model AiProcessingLog {
+  id           String   @id @default(uuid())
+  faxRequestId String   @map("fax_request_id")
+  model        String   @default("gemini-2.0-flash")
+  promptTokens Int?     @map("prompt_tokens")
+  outputTokens Int?     @map("output_tokens")
+  confidence   Float?
+  rawResponse  Json?
+  intent       Json?
+  error        String?
+  processingMs Int?     @map("processing_ms")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  faxRequest FaxRequest @relation(fields: [faxRequestId], references: [id])
+
+  @@index([faxRequestId])
+  @@index([createdAt])
+  @@map("ai_processing_logs")
+}

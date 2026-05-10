@@ -1,0 +1,32 @@
+model FaxRequest {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  status        RequestStatus @default(RECEIVED)
+  faxMediaUrl   String        @map("fax_media_url")
+  aiIntent      Json?         @map("ai_intent")
+  onchainPda    String?       @map("onchain_pda")
+  blinkUrl      String?       @map("blink_url")
+  amountJpy     Int?          @map("amount_jpy")
+  txSignature   String?       @map("tx_signature")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user            User              @relation(fields: [userId], references: [id])
+  aiLogs          AiProcessingLog[]
+  approvals       ApprovalWorkflow[]
+  auditEntries    AuditLog[]
+
+  @@map("fax_requests")
+}
+
+enum RequestStatus {
+  RECEIVED
+  AI_PROCESSING
+  INTENT_EXTRACTED
+  WAITING_APPROVAL
+  APPROVED
+  EXECUTING
+  EXECUTED
+  FAILED
+  CLOSED
+}

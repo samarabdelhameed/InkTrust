@@ -4,15 +4,18 @@
 resolution = true
 skip-lint = false
 
+[programs.localnet]
+inktrust_core = "Ink7777777777777777777777777777777777777777"
+
 [programs.devnet]
-inktrust_core = "D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR"
+inktrust_core = "Ink7777777777777777777777777777777777777777"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "Devnet"
+cluster = "Localnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
-test = "yarn run ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"
+test = "npx ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts"

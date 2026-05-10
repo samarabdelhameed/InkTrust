@@ -1,0 +1,53 @@
+model User {
+  id              String   @id @default(uuid())
+  faxNumber       String   @unique @map("fax_number")
+  proxyEmail      String   @unique @map("proxy_email")
+  embeddedWallet  String   @unique @map("embedded_wallet")
+  dailySpendLimit Int      @default(3000) @map("daily_spend_limit")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  caregivers      Caregiver[]
+  faxRequests     FaxRequest[]
+  trustedContacts TrustedContact[]
+  roles           UserRole[]
+  medicalRecords  MedicalRecord[]
+  transactions    TransactionRecord[]
+  auditEntries    AuditLog[]
+  approvals       ApprovalWorkflow[]
+
+  @@map("users")
+}
+
+model Caregiver {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  walletAddress String        @map("wallet_address")
+  name          String
+  phone         String
+  role          CaregiverRole @default(PRIMARY)
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("caregivers")
+}
+
+model TrustedContact {
+  id           String @id @default(uuid())
+  userId       String @map("user_id")
+  email        String
+  name         String
+  relationship String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("trusted_contacts")
+}
+
+enum CaregiverRole {
+  PRIMARY
+  SECONDARY
+}

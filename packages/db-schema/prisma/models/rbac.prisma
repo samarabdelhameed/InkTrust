@@ -1,0 +1,16 @@
+model UserRole {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  role   Role   @default(VIEWER)
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+enum Role {
+  ADMIN
+  CAREGIVER
+  VIEWER
+}

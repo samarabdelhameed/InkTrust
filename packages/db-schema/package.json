@@ -5,12 +5,19 @@
   "scripts": {
     "generate": "prisma generate",
     "migrate": "prisma migrate dev",
-    "studio": "prisma studio"
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset --force",
+    "push": "prisma db push",
+    "studio": "prisma studio",
+    "seed": "tsx prisma/seeds/seed.ts",
+    "seed:audit": "tsx prisma/seeds/seed-audit-logs.ts"
   },
   "dependencies": {
     "@prisma/client": "^5.0.0"
   },
   "devDependencies": {
-    "prisma": "^5.0.0"
+    "prisma": "^5.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.5.0"
   }
 }

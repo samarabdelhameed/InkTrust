@@ -1,0 +1,30 @@
+model ApprovalWorkflow {
+  id            String         @id @default(uuid())
+  faxRequestId  String         @map("fax_request_id")
+  approverId    String         @map("approver_id")
+  status        ApprovalStatus @default(PENDING)
+  signature     String?
+  signedAt      DateTime?      @map("signed_at")
+  expiresAt     DateTime?      @map("expires_at")
+  reminderSent  Boolean        @default(false) @map("reminder_sent")
+  metadata      Json?
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+
+  faxRequest FaxRequest @relation(fields: [faxRequestId], references: [id])
+  user       User       @relation(fields: [approverId], references: [id])
+
+  @@unique([faxRequestId, approverId])
+  @@index([faxRequestId])
+  @@index([approverId])
+  @@index([status])
+  @@map("approval_workflows")
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
+  ESCALATED
+}
