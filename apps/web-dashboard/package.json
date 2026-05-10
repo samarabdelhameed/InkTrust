@@ -22,6 +22,12 @@
     "@privy-io/react-auth": "^1.0.0",
     "@worldcoin/idkit": "^1.1.0",
     "@dialectlabs/blinks": "^0.10.0",
+    "zustand": "^4.5.0",
+    "@tanstack/react-query": "^5.0.0",
+    "lucide-react": "^0.370.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.3.0",
     "shared-types": "workspace:*"
   },
   "devDependencies": {
