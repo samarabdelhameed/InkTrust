@@ -183,6 +183,256 @@ The organizations that benefit from InkTrust as a bridge to reach the offline po
 
 ---
 
+## User Workflow — The Analog-to-Onchain Execution Pipeline
+
+To demonstrate how InkTrust achieves true **Zero-UI** design, the workflow is engineered to expose the brilliant contrast between the **extreme simplicity** of the analog user experience and the **extreme architectural complexity** of the backend pipeline built on AI agents and Solana blockchain.
+
+---
+
+### Part A: The Analog User Experience (What the Senior Sees)
+
+> **No apps. No wallets. No buttons. Just paper and ink.**
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   STEP 1  ✍️  Senior writes request by hand                    │
+│           "I want to buy my usual blood pressure medication"    │
+│           Sends via fax machine                                 │
+│                          │                                      │
+│   STEP 2  📠  Receives a printed confirmation page              │
+│           Draws a circle around "APPROVE" with pen              │
+│           Sends it back via fax                                 │
+│                          │                                      │
+│   STEP 3  📠  Receives final fax receipt                        │
+│           "✓ Your medication has been purchased.                │
+│            Delivery: May 12. Order #INK-4821"                   │
+│                                                                 │
+│   ⏱️  Total user effort: 3 fax interactions                    │
+│   🧠  Technical knowledge required: ZERO                       │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Part B: The Technical Pipeline (What Happens Under the Hood)
+
+> **This is where the engineering magic lives.** The fax passes through 6 concurrent architectural stages — each leveraging a different sponsor tool.
+
+#### Step 1 — Analog Ingestion & Webhook Trigger
+
+The fax signal is received via **Fax-over-IP** protocol through the Telnyx API.
+
+```
+📠 Fax signal received
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  Telnyx Webhook Handler (Express + TS)      │
+│  ├── Converts fax to digital image (TIFF)   │
+│  ├── Extracts metadata (sender, timestamp)  │
+│  └── Enqueues to BullMQ task queue          │
+│       (async processing, zero data loss)    │
+└─────────────────────────────────────────────┘
+```
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Fax Gateway | Telnyx API | Fax-over-IP reception via webhook |
+| Server | Express + TypeScript | Webhook capture & preprocessing |
+| Task Queue | BullMQ | Async workflow management, guaranteed delivery |
+
+#### Step 2 — Multimodal Parsing & Intent Extraction
+
+The digitized fax image is passed to **Gemini 2.0 Flash** for multimodal vision analysis.
+
+```
+🖼️ Fax image enters AI pipeline
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  Gemini 2.0 Flash (Vision AI)               │
+│  ├── Japanese handwriting OCR               │
+│  ├── Context analysis & disambiguation      │
+│  ├── Intent classification:                 │
+│  │   ├── PURCHASE (medication, groceries)   │
+│  │   ├── INQUIRY (email, news, weather)     │
+│  │   ├── PAYMENT (bills, transfers)         │
+│  │   └── APPOINTMENT (clinic, services)     │
+│  ├── Entity extraction (items, amounts)     │
+│  └── Financial flag: YES/NO                 │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+        Structured Intent Object:
+        {
+          type: "PURCHASE",
+          item: "blood pressure medication",
+          amount: "¥4,500",
+          urgency: "NORMAL",
+          requires_approval: true
+        }
+```
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Vision AI | Gemini 2.0 Flash | One-shot handwriting OCR + intent extraction |
+| Circle Detection | Gemini Vision | Detect hand-drawn approval circles (Y/N) |
+
+#### Step 3 — MCP Agent Orchestration
+
+The system acts as a **Workflow Orchestrator**, routing the structured intent to specialized MCP (Model Context Protocol) Servers.
+
+```
+📋 Structured Intent received
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  MCP Agent Controller (Orchestrator)        │
+│  ├── Routes intent to specialized agents:   │
+│  │   ├── 🛒 Commerce Agent (Amazon.co.jp)   │
+│  │   ├── 📧 Email Agent (read/compose)      │
+│  │   ├── 📅 Booking Agent (appointments)    │
+│  │   └── 💊 Pharmacy Agent (medication)     │
+│  ├── Maintains contextual memory            │
+│  │   (multi-turn fax conversations)         │
+│  └── Playwright-based web automation        │
+│       for real-world service interaction     │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+         Agent identifies: "Medication X"
+         Best price: ¥4,500 on PharmacyY.co.jp
+```
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Orchestrator | MCP Controller | Intent routing & workflow management |
+| Web Agents | Playwright + MCP Servers | Autonomous web browsing & product search |
+| Memory | Contextual state store | Multi-turn fax conversation tracking |
+
+#### Step 4 — Onchain Policy & Trust Verification
+
+**This is where Solana shines.** The transaction enters the decentralized trust layer.
+
+```
+💰 Purchase request: ¥4,500
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  Onchain Trust Layer (Solana)               │
+│  ├── Privy: Resolve senior's embedded       │
+│  │   wallet (invisible, gasless)            │
+│  ├── Swig Policy Engine: Check rules        │
+│  │   ├── Spending limit: ¥3,000/day         │
+│  │   ├── ¥4,500 EXCEEDS threshold ⚠️       │
+│  │   └── Action: PAUSE & ESCALATE           │
+│  ├── Durable Nonce: Create non-expiring TX  │
+│  │   (valid until caregiver signs)          │
+│  └── Blink Generator: Create approval URL   │
+│       https://inktrust.app/approve/tx_9f3a  │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+         📱 SMS to caregiver:
+         "Dad wants to buy medication — ¥4,500"
+         [Approve via Blink] [Reject]
+```
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Wallet | Privy (embedded, gasless) | Invisible wallet resolution |
+| Policy Engine | Swig SDK | Onchain spending limits & rules |
+| Async TX | Durable Nonces | Non-expiring transactions for slow fax workflows |
+| Approval | Solana Blinks | One-tap caregiver co-signing via URL |
+| Multisig | Squads (Altitude) | N-of-M family approval for critical operations |
+| Identity | World IDKit | Zero-knowledge proof of humanity (anti-fraud) |
+
+#### Step 5 — Agentic Commerce & Execution
+
+Once approved, the transaction is signed and real-world commerce is executed.
+
+```
+✅ Caregiver taps Blink → Approves
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  Transaction Execution Pipeline             │
+│  ├── Phantom MCP Server:                    │
+│  │   └── send_solana_transaction()          │
+│  │       (1 of 28 available tools)          │
+│  ├── MoonPay Agents:                        │
+│  │   ├── Issue virtual card (Visa/MC)       │
+│  │   └── Complete purchase on pharmacy site │
+│  ├── x402 Protocol (Coinbase):              │
+│  │   └── Pay API fees in USDC micropayments │
+│  │       ($0.002 per pharmacy API call)     │
+│  └── Metaplex Agent Kit:                    │
+│       └── Log action to agent's Core NFT    │
+│           (immutable audit trail)           │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+         💳 Medication purchased on PharmacyY.co.jp
+         📦 Delivery scheduled: May 12
+```
+
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| TX Signing | Phantom MCP Server | 28 ready-made blockchain tools for AI |
+| Commerce | MoonPay Agents | Virtual card issuance & e-commerce |
+| Micropayments | x402 (Coinbase) | Stablecoin API fee payments |
+| Audit | Metaplex Agent Kit | Immutable action log on Core NFT |
+
+#### Step 6 — Analog Synthesis & Document Generation
+
+The AI agent compiles all results into a senior-friendly printed document.
+
+```
+📋 Agent compiles results
+        │
+        ▼
+┌─────────────────────────────────────────────┐
+│  Document Generator (Renderer)              │
+│  ├── Aggregates: order confirmation,        │
+│  │   receipt, delivery date, TX hash        │
+│  ├── Formats in large, clear Japanese text  │
+│  │   (senior-friendly typography)           │
+│  ├── Simplifies financial details           │
+│  │   (hides crypto complexity)              │
+│  └── Generates printable document           │
+└──────────────────┬──────────────────────────┘
+                   │
+                   ▼
+         📠 Fax sent back to senior's machine
+         "✓ Your medication has been purchased.
+          Delivery: May 12. Order #INK-4821"
+
+         🔄 ROUND-TRIP COMPLETE
+```
+
+---
+
+### Full Pipeline Summary
+
+```
+┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐    ┌──────────┐
+│  STEP 1  │───▶│  STEP 2  │───▶│  STEP 3  │───▶│  STEP 4  │───▶│  STEP 5  │───▶│  STEP 6  │
+│ Ingestion│    │ Vision AI│    │  Agent   │    │ Onchain  │    │ Commerce │    │  Output  │
+│          │    │          │    │Orchestr. │    │  Trust   │    │Execution │    │          │
+│ Telnyx   │    │ Gemini   │    │   MCP    │    │Swig+Privy│    │ MoonPay  │    │   Fax    │
+│ Webhook  │    │  Flash   │    │ Servers  │    │ Blinks   │    │  x402    │    │ Receipt  │
+└──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘    └──────────┘
+   📠 → 🖼️        🖼️ → 📋        📋 → 🤖        🤖 → ✅        ✅ → 💳        💳 → 📠
+   Analog          Parse          Route          Verify         Execute        Print
+```
+
+> **Pitch Closing Line:**
+> *"Our workflow proves that you don't need complex Web3 interfaces to build Web3 applications. We take ink on paper, transform it through Vision AI and MCP agents into a cryptographically signed transaction on Solana, and return it as ink on paper — in seconds. This is what true Zero-UI looks like."*
+
+---
+
 ## Architecture
 
 ```
