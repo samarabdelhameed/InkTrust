@@ -2,10 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
-import { telnyxWebhookRouter } from "./routes/webhooks/telnyx";
-import { approveRequestRouter } from "./routes/actions/approve-request";
-import { geminiParserRouter } from "./routes/ai/gemini-parser";
-import { x402ServicesRouter } from "./routes/agent/x402-services";
+import { setupWebSockets } from "./websocket";
+import { setupQueues } from "./queues";
+import apiRoutes from "./api";
 
 dotenv.config();
 
@@ -13,47 +12,47 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ============================================================
-// Middleware
+// Enterprise Middleware
 // ============================================================
 app.use(helmet());
-app.use(cors());
-app.use(express.json());
-app.use(express.raw({ type: "application/pdf", limit: "10mb" }));
+app.use(cors({ origin: process.env.NEXT_PUBLIC_APP_URL }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.raw({ type: "application/pdf", limit: "50mb" }));
 
 // ============================================================
-// API Routes
+// API Routing
 // ============================================================
-
-// Fax ingestion — Telnyx webhook
-app.use("/api/webhooks", telnyxWebhookRouter);
-
-// Solana Blinks — caregiver approval actions
-app.use("/api/actions", approveRequestRouter);
-
-// AI orchestration — Gemini Vision parser
-app.use("/api/ai", geminiParserRouter);
-
-// Agent payments — x402 stablecoin micropayments
-app.use("/api/agent", x402ServicesRouter);
+app.use("/api/v1", apiRoutes);
 
 // Health check
-app.get("/api/health", (_req, res) => {
+app.get("/health", (_req, res) => {
   res.json({
-    status: "ok",
+    status: "healthy",
     service: "inktrust-api-server",
     timestamp: new Date().toISOString(),
   });
 });
 
 // ============================================================
-// Start Server
+// Initialization & Server Start
 // ============================================================
-app.listen(PORT, () => {
-  console.log(`🖋️  InkTrust API Server running on port ${PORT}`);
-  console.log(`📠 Fax webhook:   POST /api/webhooks/telnyx`);
-  console.log(`🔗 Blinks:        GET  /api/actions/approve/:requestId`);
-  console.log(`🧠 AI Parser:     POST /api/ai/parse-fax`);
-  console.log(`💰 x402 Agent:    POST /api/agent/x402-pay`);
-});
+async function startServer() {
+  try {
+    // Initialize BullMQ Workers
+    await setupQueues();
+
+    const server = app.listen(PORT, () => {
+      console.log(`[Server] 🖋️ InkTrust API running on port ${PORT}`);
+    });
+
+    // Initialize WebSockets
+    setupWebSockets(server);
+  } catch (error) {
+    console.error("[Server] ❌ Initialization failed:", error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;

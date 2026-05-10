@@ -16,7 +16,7 @@
     "@solana/actions": "^1.6.0",
     "@coral-xyz/anchor": "^0.30.1",
     "@google/generative-ai": "^0.21.0",
-    "metaplex-agent-kit": "^0.1.0",
+    "@metaplex-foundation/umi": "^0.9.1",
     "@coinbase/coinbase-sdk": "^0.10.0",
     "@sqds/multisig": "^2.1.0",
     "bullmq": "^5.0.0",
