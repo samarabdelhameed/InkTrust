@@ -116,6 +116,73 @@ Because the target users are elderly, InkTrust provides **multiple invisible pro
 
 ---
 
+## Define Target Users
+
+In complex systems built on AI Agents and blockchain, defining users goes beyond a single "end-user" profile. InkTrust identifies **three distinct tiers** of users that interact with the system through fundamentally different interfaces and trust models.
+
+### 👴 Tier 1 — Primary End-Users: Analog-First Seniors
+
+The core users and the entire reason InkTrust exists. They are integrated into the digital economy with **zero technical friction**.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Demographic** | Offline elderly populations, initially targeting Japan's hyper-aged society where fax machines remain ubiquitous and trusted |
+| **Tech Profile** | Users with a **zero digital footprint**. They cannot (or choose not to) use smartphones, apps, web pages, passwords, or Web3 wallets |
+| **Core Needs** | Access to essential digital services: email, online shopping, medication refills, appointment booking, news, and bill payments |
+| **Risk Profile** | **Highly vulnerable** demographic — susceptible to financial fraud, phishing attacks, and excessive spending patterns caused by conditions such as dementia |
+| **InkTrust Interface** | Paper + ink + fax machine. No screens, no logins, no digital interaction of any kind |
+
+### 👨‍👩‍👧 Tier 2 — Secondary Users: Digital Caregivers
+
+The decentralized protection layer and digital decision-makers within the system.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Demographic** | Adult children, trusted family members, or professional healthcare providers responsible for the senior's wellbeing |
+| **Architectural Role** | Function as **Authorization Nodes** and **multi-party co-signers** on the blockchain — they are the human gatekeepers of the onchain policy engine |
+| **Core Needs** | Remote control over spending limits, real-time alerts for unusual activity, one-tap transaction approval via Solana Blinks, and a lightweight mobile dashboard — without needing to micromanage every aspect of the senior's daily life |
+| **InkTrust Interface** | Mobile phone (SMS/WhatsApp for Blink approvals) + caregiver dashboard (Next.js web app) |
+
+### 🏛️ Tier 3 — Tertiary Users: Institutions & Operators
+
+The organizations that benefit from InkTrust as a bridge to reach the offline population.
+
+| Attribute | Detail |
+|-----------|--------|
+| **Government & Public Sector** | Municipal governments, elderly care centers, and local clinics seeking efficient ways to digitize their services and deliver them to non-technical citizens |
+| **Commercial Entities** | E-commerce platforms, healthcare providers, and pharmacy chains that want to access the elderly demographic as a new consumer segment |
+| **System Operators** | Administrators who use **admin dashboards** for real-time operational monitoring, human-in-the-loop review of anomalous purchase patterns, and system health management |
+| **InkTrust Interface** | Admin dashboard (Next.js) + API integrations + analytics & audit logs |
+
+### Target User Interaction Map
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   👴 TIER 1: Senior                                            │
+│   Interface: Paper + Ink + Fax                                  │
+│   Interaction: Write request → Receive printed receipt          │
+│                         │                                       │
+│                    [AI Agent]                                    │
+│                         │                                       │
+│   👨‍👩‍👧 TIER 2: Caregiver                                       │
+│   Interface: Mobile Phone + Blinks + Dashboard                  │
+│   Interaction: Receive alerts → One-tap approve → Monitor       │
+│                         │                                       │
+│                  [Solana Blockchain]                             │
+│                         │                                       │
+│   🏛️ TIER 3: Institution / Operator                            │
+│   Interface: Admin Dashboard + APIs + Audit Logs                │
+│   Interaction: Monitor operations → Review anomalies → Serve    │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+> **Elevator Pitch (Target Users):**
+> *"InkTrust serves three integrated tiers: (1) Elderly users who get a simple analog interface to the internet via fax, (2) Family caregivers who use smartphones as a decentralized authorization infrastructure for financial approvals, and (3) Institutions and governments that use admin dashboards to deliver their services to this isolated demographic with full security and auditability."*
+
+---
+
 ## Architecture
 
 ```
