@@ -4,7 +4,7 @@ use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 pub mod state;
 use state::*;
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR");
 
 #[program]
 pub mod inktrust_core {
@@ -14,6 +14,7 @@ pub mod inktrust_core {
     /// Called by the API server once Gemini extracts the intent.
     pub fn initialize_request(
         ctx: Context<InitializeRequest>,
+        request_id: u64,
         amount: u64,
         intent_hash: [u8; 32],
     ) -> Result<()> {
@@ -81,12 +82,13 @@ pub mod inktrust_core {
 // ============================================================
 
 #[derive(Accounts)]
+#[instruction(request_id: u64)]
 pub struct InitializeRequest<'info> {
     #[account(
         init,
         payer = payer,
         space = 8 + FaxRequestState::INIT_SPACE,
-        seeds = [b"fax_request", owner.key().as_ref(), &Clock::get()?.unix_timestamp.to_le_bytes()],
+        seeds = [b"fax_request", owner.key().as_ref(), request_id.to_le_bytes().as_ref()],
         bump,
     )]
     pub fax_request: Account<'info, FaxRequestState>,

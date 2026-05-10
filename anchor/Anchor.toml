@@ -1,15 +1,17 @@
+[toolchain]
+
 [features]
-seeds = false
+resolution = true
 skip-lint = false
 
 [programs.devnet]
-inktrust_core = "11111111111111111111111111111111"
+inktrust_core = "D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR"
 
 [registry]
 url = "https://api.apr.dev"
 
 [provider]
-cluster = "devnet"
+cluster = "Devnet"
 wallet = "~/.config/solana/id.json"
 
 [scripts]
