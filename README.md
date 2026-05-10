@@ -1025,6 +1025,55 @@ inktrust/
 
 ---
 
+## 18.5 Dev Environment Setup & Toolchain Config
+
+To prepare the InkTrust Monorepo development environment, we rely on the latest tools from the Solana ecosystem, alongside specialized configuration for AI Agent Model Context Protocol (MCP) servers.
+
+### 1. Core Dependencies
+To begin, the following tools must be available on your operating system (supports Windows WSL, Linux, and Mac):
+* **Node.js & Rust:** The foundation for running servers and building smart contracts.
+* **pnpm package manager:** The default and highly recommended package manager for `create-solana-dapp` due to its speed in managing monorepos.
+* **Solana & Anchor Tools:** The Anchor framework (for contract development) and Solana CLI tools (for network interaction) can be installed via the unified quick-install command provided by Solana.
+
+### 2. Scaffolding the Monorepo
+Instead of building directories manually, we use `create-solana-dapp` to generate a production-ready architecture containing an Anchor program and a Next.js UI with Tailwind CSS.
+
+```bash
+npx create-solana-dapp@latest
+# Recommended options:
+# - Project name: inktrust-monorepo
+# - Preset: Next.js
+# - UI library: Tailwind
+# - Anchor template: counter (replaced by inktrust_core)
+```
+
+### 3. Local Blockchain Testing
+To validate our smart contracts before deployment without spending real gas fees, we use next-generation open-source tools:
+* **Mollusk / LiteSVM:** We use these libraries (instead of the traditional test bank) for testing Anchor contracts because they provide an extremely fast, lightweight test environment for executing Solana transactions locally.
+* **Solana Test Validator:** Used to run the blockchain locally for end-to-end integration tests with the backend server.
+
+### 4. AI Agents & MCP Setup
+This is the component that connects the Phantom wallet to the AI to execute tasks.
+* **Claude Desktop Configuration:** To allow the smart agent to use Phantom tools (like `send_solana_transaction`), you must modify the local agent config file (`~/Library/Application Support/Claude/claude_desktop_config.json` on Mac) and add the Phantom MCP server to run independently.
+* **Pentagon Workspace:** Instead of manual coding for every tool, it is recommended to use Pentagon (a dedicated workspace for AI agents on macOS). It allows you to run a "fleet of agents" in parallel (e.g., one writes code, another tests the smart contract), drastically accelerating development during the hackathon.
+
+### 5. Frontend & Web3 Tooling SDKs
+You must install the latest SDK versions of our sponsors to ensure UIs and embedded wallets function correctly:
+* **Solana Web3:** We rely on `@solana/kit` (the recommended next-gen library) or `@solana/web3.js` for network interactions.
+* **Phantom SDKs:** Install `@phantom/react-sdk` and `@phantom/browser-sdk` to provide a seamless Zero-UI embedded wallet experience.
+* **Privy SDK:** For bridging email and social logins to embedded wallets.
+
+### 6. Environment Variables (.env)
+To run the system with all features and sponsor integrations, you must configure your environment variables. 
+* See `.env.example` in the project root for Backend and API secrets (Telnyx, Gemini, Coinbase CDP, Swig, Agent keys).
+* See `apps/web-dashboard/.env.local` for Frontend public keys (Phantom Portal App ID, Privy App ID, World ID).
+
+> **Action Item:** To complete this setup successfully, you must first log into the Phantom Portal to register InkTrust and extract the App ID. Without it, Google/Apple social login for embedded wallets will not work.
+
+With this setup, your development environment is fully equipped to handle both Web2 and Web3 challenges simultaneously, allowing you to begin executing task breakdowns immediately.
+
+---
+
 ## Contributing
 
 We welcome contributions! Please read our contributing guidelines before submitting pull requests.
