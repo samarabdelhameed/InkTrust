@@ -359,18 +359,215 @@ NEXT_PUBLIC_SOLANA_NETWORK=devnet npm run dev
 
 ## Sponsor Integrations
 
-InkTrust is purpose-built to maximize integration with Colosseum hackathon sponsor tools:
+InkTrust is architected to maximize deep, meaningful integration with Colosseum hackathon sponsor tools — not as superficial add-ons, but as load-bearing pillars of the system.
 
-| Sponsor | Integration | Track |
-|---------|------------|-------|
-| **Metaplex** | Agent Kit for onchain AI agent identity (Core NFTs with embedded wallets) | Agent Infrastructure |
-| **Swig** | Smart wallet policy engine for family-governed spending rules & delegated execution | Smart Wallets |
-| **Privy** | Invisible embedded wallets with gasless transactions for zero-friction UX | Auth & Wallets |
-| **MoonPay** | Agent-driven virtual card issuance for real-world e-commerce purchases | Agentic Commerce |
-| **Coinbase (x402)** | Stablecoin micropayments for API-level service fees | Payments Protocol |
-| **Helius** | Sub-millisecond RPC for real-time demo reliability | Infrastructure |
-| **Google (Gemini)** | Multimodal vision model for handwriting recognition & intent extraction | AI / ML |
-| **Telnyx** | Fax-to-webhook gateway for analog-to-digital conversion | Communications |
+### 🔮 Invisible UX & Embedded Wallets
+
+All blockchain complexity is hidden from the elderly user. No extensions, no seed phrases, no gas fees.
+
+| Tool | Role in InkTrust | Why It Matters |
+|------|-----------------|----------------|
+| **Privy** | Creates invisible embedded wallets for each senior. Supports gasless transactions so the user never pays fees. Login via email/Google/Apple for caregivers. | The senior never knows a wallet exists. The caregiver onboards in seconds. |
+| **Phantom Connect** | Alternative embedded wallet with `phantom-embedded-react-starter` for Next.js. Seamless browser-based auth for the caregiver dashboard. | Battle-tested wallet infrastructure with native Solana support. |
+
+### 🤖 AI Agent Identity & Blockchain Execution
+
+The fax doesn't buy medicine — the AI Agent does. Each agent needs an onchain identity and the ability to execute transactions.
+
+| Tool | Role in InkTrust | Why It Matters |
+|------|-----------------|----------------|
+| **Metaplex Agent Kit** | Registers each AI agent on Solana as a **Core NFT** with an embedded wallet. Gives the agent a verifiable onchain identity and economic agency. | The agent has a provable, auditable identity — not just a backend process. Judges can verify every action onchain. |
+| **Phantom MCP Server** | Provides **28 ready-made tools** that AI models (Gemini) can invoke directly: `send_solana_transaction`, `transfer_tokens`, `sign_solana_message`, and more. | The "magic bridge" — when Gemini detects a hand-drawn approval circle, it calls Phantom MCP to sign and submit the transaction in one step. |
+
+### 🛡️ Family Governance & Fraud Prevention
+
+Protecting elderly users from exploitation is the core trust layer. These tools enforce spending rules at the protocol level.
+
+| Tool | Role in InkTrust | Why It Matters |
+|------|-----------------|----------------|
+| **Swig SDK** | Onchain policy engine for smart wallets. Enforces spending limits, category restrictions, time-based windows, and delegated execution. Transactions exceeding thresholds are paused until a caregiver co-signs. | The "Circle-to-Approve" mechanism is backed by real smart contract enforcement — not just UI logic. |
+| **Squads Multisig** (Altitude) | Multi-party approval for high-sensitivity operations. Requires N-of-M family members to co-sign critical transactions. | Adds an extra security layer for large transfers or unusual activity patterns. |
+| **World (IDKit)** | Zero-knowledge proof of humanity (zk-proofs) to verify that the fax sender is a real, authorized human — not a spoofed or fraudulent request. | Prevents identity impersonation attacks without compromising user privacy. |
+
+### 💰 Real-World Commerce & Agent Payments
+
+How the AI Agent actually buys medicine, pays bills, and interacts with the physical economy.
+
+| Tool | Role in InkTrust | Why It Matters |
+|------|-----------------|----------------|
+| **MoonPay Agents** | Grants AI agents the ability to manage real-world funds and issue **virtual cards** for e-commerce purchases (Amazon, pharmacies, utilities). | The agent can buy physical goods autonomously — bridging crypto to real-world commerce. |
+| **Coinbase CDP** | Full agentic commerce infrastructure — alternative to MoonPay for agent-driven financial operations. | Redundancy and flexibility for commerce execution. |
+| **x402 Protocol** (Coinbase) | Enables the AI agent to pay API fees instantly using **stablecoin micropayments**. When the agent queries a medical database or calls a taxi service API, it pays per-request in USDC. | Creates a self-sustaining agent economy — the agent pays for its own operational costs onchain. |
+
+### ⚡ Infrastructure & Performance
+
+Ensuring the system runs at lightning speed during the hackathon demo.
+
+| Tool | Role in InkTrust | Why It Matters |
+|------|-----------------|----------------|
+| **Helius RPC** | Sub-millisecond RPC responses for reading blockchain state and submitting transactions. | During the live demo, every transaction confirms instantly. No waiting, no failures. |
+| **Google Gemini 2.0 Flash** | Multimodal vision AI for handwriting OCR, intent extraction, and circle detection — all in one-shot interpretation. | The cognitive engine that turns ink on paper into structured digital commands. |
+| **Telnyx API** | Fax-to-webhook gateway. Receives inbound fax as image via webhook, sends outbound fax for receipts and approval pages. | The analog-to-digital bridge at the hardware level. |
+| **create-solana-dapp** | CLI scaffolding tool to bootstrap the Next.js + Solana project structure in seconds. | Maximizes development speed during the hackathon. |
+
+---
+
+## Advanced Solana Features
+
+InkTrust leverages deep Solana-native capabilities that demonstrate advanced blockchain engineering knowledge.
+
+### 🔗 Solana Blinks for Caregiver Approval
+
+Instead of relying solely on SMS notifications, InkTrust uses **Solana Actions & Blinks** to create instant, one-tap approval links for caregivers.
+
+**How it works:**
+1. Senior sends a fax requesting a ¥50,000 medication purchase
+2. AI Agent creates an unsigned transaction and generates a **Blink URL**
+3. System sends the Blink link via SMS/WhatsApp to the designated caregiver
+4. Caregiver taps the link → Phantom wallet opens → **one-tap approval**
+5. Transaction is co-signed and executed on Solana
+
+```
+📠 Fax received: "Buy heart medication"
+        │
+        ▼
+🤖 Agent creates unsigned TX → Generates Blink URL
+        │
+        ▼
+📱 SMS to caregiver: "Dad needs medication (¥50,000)"
+   └── Contains Blink: https://inktrust.app/approve/tx_abc123
+        │
+        ▼
+👆 Caregiver taps Blink → Phantom opens → One-tap approve
+        │
+        ▼
+✅ Co-signed TX submitted to Solana → Purchase executes
+```
+
+> **Why this impresses judges:** It elegantly bridges the analog user (fax) with the digital caregiver (Blink) using Solana-native primitives.
+
+### ⏳ Durable Nonces for Asynchronous Transactions
+
+Solana transactions expire within seconds (blockhash TTL). But fax-based workflows are inherently slow — a senior might take minutes or hours to return an approval. **Durable Nonces** solve this.
+
+**The problem:** A standard Solana transaction prepared when the fax is received will expire long before the Circle-to-Approve response arrives.
+
+**The solution:** InkTrust uses Solana's **Durable Transaction Nonces** to create transactions that remain valid indefinitely until signed:
+
+```
+📠 Fax received → Agent prepares transaction
+        │
+        ▼
+🔐 Transaction created with Durable Nonce (no expiry)
+        │
+        ▼
+⏳ Hours pass... Senior draws approval circle and faxes back
+        │
+        ▼
+✍️ Circle detected → Durable Nonce TX is signed and submitted
+        │
+        ▼
+✅ Transaction executes successfully (even hours later)
+```
+
+> **Why this impresses judges:** It proves deep understanding of Solana's transaction lifecycle and solves a real architectural constraint of bridging slow analog devices with fast blockchain finality.
+
+### 💸 x402 Protocol for Agent Economy
+
+InkTrust's AI agents don't just execute tasks — they **pay for their own operational costs** using the x402 protocol.
+
+When an agent needs to:
+- Query a premium medical database for drug interactions
+- Call a taxi/delivery service API for the senior
+- Access a paid translation service
+
+...it pays per-request using **stablecoin micropayments (USDC)** directly from its embedded wallet:
+
+```
+🤖 Agent needs to check drug interactions
+        │
+        ▼
+💰 x402: Agent pays $0.002 USDC to medical API
+        │
+        ▼
+📋 API returns drug safety data
+        │
+        ▼
+🤖 Agent incorporates data into purchase decision
+```
+
+> **Why this impresses judges:** It demonstrates a self-sustaining agent economy where AI agents have real economic agency on Solana — a key narrative for the Coinbase sponsor track.
+
+### 🗜️ ZK Compression for Scalability
+
+To prove InkTrust can scale from a hackathon demo to millions of elderly users, we integrate **ZK Compression** via Light Protocol.
+
+**The challenge:** Creating a Solana account for every senior, every fax device, and every agent generates significant onchain storage costs at scale.
+
+**The solution:** ZK Compression reduces account creation costs by **orders of magnitude** by compressing state into Merkle trees verified by zero-knowledge proofs:
+
+| Without Compression | With ZK Compression |
+|--------------------|---------------------|
+| ~$0.01 per account | ~$0.00005 per account |
+| 1M users = ~$10,000 | 1M users = ~$50 |
+
+> **Why this impresses judges:** It proves the system is production-ready and commercially scalable — not just a hackathon prototype.
+
+---
+
+## Omni-Channel Vision
+
+While the fax machine is InkTrust's signature interface (and the emotional hook for the demo), the architecture is designed as an **Omni-Channel Analog Bridge** — supporting any legacy communication method:
+
+| Channel | Input Method | Status |
+|---------|-------------|--------|
+| 📠 **Fax** | Handwritten paper via Telnyx | Primary (Demo) |
+| 📱 **SMS** | Plain text messages from basic phones | Planned |
+| 📞 **Voice** | Landline phone calls via speech-to-text | Planned |
+| ✉️ **Postal Mail** | Scanned physical letters | Future |
+
+The AI agent layer is **channel-agnostic** — it receives structured intents regardless of the input source. This makes InkTrust a universal solution for the global digital divide, not just a Japan-specific fax tool.
+
+---
+
+## Competitive Demo Flow
+
+The end-to-end demo designed to win first place at Colosseum:
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    INKTRUST LIVE DEMO                           │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  STEP 1: 📠 Senior faxes handwritten request                   │
+│          "Buy my blood pressure medication"                     │
+│                         │                                       │
+│  STEP 2: 🧠 Gemini 2.0 Flash reads handwriting                │
+│          Extracts intent: PURCHASE → medication → ¥4,500        │
+│                         │                                       │
+│  STEP 3: 🤖 Metaplex Agent activates (Core NFT identity)      │
+│          Checks Swig spending policy → exceeds ¥3,000 limit    │
+│                         │                                       │
+│  STEP 4: ⏸️  Swig pauses transaction (Durable Nonce created)  │
+│          Generates Solana Blink URL                             │
+│                         │                                       │
+│  STEP 5: 📱 SMS/WhatsApp sent to caregiver with Blink         │
+│          "Dad wants to buy medication — ¥4,500. Approve?"       │
+│                         │                                       │
+│  STEP 6: 👆 Caregiver taps Blink → Phantom → One-tap approve  │
+│          Co-signature recorded on Solana                        │
+│                         │                                       │
+│  STEP 7: 💳 MoonPay Agent issues virtual card                  │
+│          Purchases medication on pharmacy website               │
+│          x402 pays API fees in USDC micropayments               │
+│                         │                                       │
+│  STEP 8: 📠 Fax receipt printed and sent to senior             │
+│          "✓ Medication ordered. Delivery: May 12. Receipt #TX"  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+> **Pitch line:** *"The user sees only a fax machine. But behind the scenes, that fax becomes a secure agentic internet interface — powered by AI agents, governed by family-controlled smart contracts, and settled on Solana's blockchain. We use Blinks for approvals, x402 for agent economy, and Durable Nonces to bridge the slow analog world with fast blockchain finality."*
 
 ---
 
@@ -378,34 +575,43 @@ InkTrust is purpose-built to maximize integration with Colosseum hackathon spons
 
 ```
 inktrust/
-├── app/                        # Next.js App Router
+├── app/                          # Next.js App Router
 │   ├── api/
 │   │   ├── fax/
-│   │   │   ├── inbound/        # Telnyx fax webhook handler
-│   │   │   └── outbound/       # Fax response generator
-│   │   ├── agent/              # AI agent orchestration endpoints
-│   │   ├── approve/            # Circle-to-Approve processing
-│   │   └── commerce/           # MoonPay virtual card operations
-│   ├── dashboard/              # Caregiver management interface
-│   └── layout.tsx              # Root layout
+│   │   │   ├── inbound/          # Telnyx fax webhook handler
+│   │   │   └── outbound/         # Fax response & receipt generator
+│   │   ├── agent/                # AI agent orchestration endpoints
+│   │   ├── approve/              # Circle-to-Approve processing
+│   │   ├── blinks/               # Solana Actions & Blinks endpoints
+│   │   └── commerce/             # MoonPay virtual card operations
+│   ├── dashboard/                # Caregiver management interface
+│   └── layout.tsx                # Root layout
 ├── lib/
 │   ├── ai/
-│   │   ├── gemini.ts           # Gemini 2.0 Flash vision client
-│   │   └── intent-parser.ts    # Handwriting → structured intent
+│   │   ├── gemini.ts             # Gemini 2.0 Flash vision client
+│   │   └── intent-parser.ts      # Handwriting → structured intent
 │   ├── blockchain/
-│   │   ├── metaplex.ts         # Agent Kit integration
-│   │   ├── swig.ts             # Policy engine & smart wallets
-│   │   └── privy.ts            # Embedded wallet management
+│   │   ├── metaplex.ts           # Agent Kit integration (Core NFTs)
+│   │   ├── swig.ts               # Policy engine & smart wallets
+│   │   ├── privy.ts              # Embedded wallet management
+│   │   ├── phantom-mcp.ts        # Phantom MCP Server (28 tools)
+│   │   ├── blinks.ts             # Solana Actions & Blinks generator
+│   │   ├── durable-nonce.ts      # Durable Nonce management
+│   │   ├── zk-compression.ts     # Light Protocol ZK Compression
+│   │   └── squads.ts             # Squads Multisig integration
 │   ├── commerce/
-│   │   ├── moonpay.ts          # Virtual card & purchase logic
-│   │   └── x402.ts             # Stablecoin micropayments
+│   │   ├── moonpay.ts            # Virtual card & purchase logic
+│   │   ├── x402.ts               # Stablecoin micropayments (Coinbase)
+│   │   └── coinbase-cdp.ts       # Coinbase CDP agentic commerce
+│   ├── security/
+│   │   └── world-id.ts           # World IDKit (zk proof of humanity)
 │   └── fax/
-│       ├── telnyx.ts           # Fax send/receive handlers
-│       └── renderer.ts         # Receipt & approval page generator
-├── programs/                   # Solana programs (Anchor)
-│   └── guardian/               # Family permission smart contract
-├── public/                     # Static assets
-├── .env.example                # Environment template
+│       ├── telnyx.ts             # Fax send/receive handlers
+│       └── renderer.ts           # Receipt & approval page generator
+├── programs/                     # Solana programs (Anchor)
+│   └── guardian/                 # Family permission smart contract
+├── public/                       # Static assets
+├── .env.example                  # Environment template
 ├── package.json
 └── README.md
 ```
@@ -414,14 +620,40 @@ inktrust/
 
 ## Roadmap
 
+### Phase 1: Core Infrastructure
 - [x] System architecture & design document
-- [ ] Fax ingestion pipeline (Telnyx webhooks)
-- [ ] Gemini Vision integration for handwriting OCR
+- [ ] Project scaffolding (`create-solana-dapp` + Next.js)
+- [ ] Privy embedded wallet integration (gasless)
+- [ ] Phantom Connect as alternative wallet provider
+- [ ] Helius RPC configuration
+
+### Phase 2: AI & Fax Pipeline
+- [ ] Telnyx fax webhook ingestion pipeline
+- [ ] Gemini 2.0 Flash vision integration (handwriting OCR)
+- [ ] Intent parser (handwriting → structured commands)
 - [ ] Circle-to-Approve detection model
-- [ ] Metaplex Agent registration & wallet binding
-- [ ] Swig policy engine integration
-- [ ] Privy gasless wallet setup
-- [ ] MoonPay virtual card commerce flow
+- [ ] MCP Agent Controller (intent router & executor)
+
+### Phase 3: Onchain Agent Identity
+- [ ] Metaplex Agent Kit — register agents as Core NFTs
+- [ ] Phantom MCP Server integration (28 blockchain tools)
+- [ ] Agent embedded wallet binding
+
+### Phase 4: Trust & Governance Layer
+- [ ] Swig SDK — onchain policy engine & spending limits
+- [ ] Squads Multisig — multi-party caregiver approval
+- [ ] Solana Blinks — one-tap caregiver approval links
+- [ ] Durable Nonces — async transaction support for fax delays
+- [ ] World IDKit — zero-knowledge proof of humanity
+
+### Phase 5: Commerce & Economy
+- [ ] MoonPay Agents — virtual card issuance & e-commerce
+- [ ] x402 Protocol — stablecoin micropayments for agent APIs
+- [ ] Coinbase CDP — agentic commerce infrastructure
+
+### Phase 6: Scale & Polish
+- [ ] ZK Compression (Light Protocol) — scalable account creation
+- [ ] Omni-channel support (SMS, voice)
 - [ ] Caregiver dashboard (Next.js)
 - [ ] End-to-end demo pipeline
 - [ ] Colosseum hackathon submission
