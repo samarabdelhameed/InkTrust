@@ -46,6 +46,9 @@ importers:
       '@sqds/multisig':
         specifier: ^2.1.0
         version: 2.1.4(bufferutil@4.1.0)(encoding@0.1.13)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@6.0.6)
+      axios:
+        specifier: ^1.7.0
+        version: 1.16.0
       bullmq:
         specifier: ^5.0.0
         version: 5.76.6

@@ -3,7 +3,6 @@ import { Connection, PublicKey } from '@solana/web3.js';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 import { blockchainQueue } from '../queues';
-import { solanaKit } from '../blockchain/kit-adapter';
 
 export class DataSyncService {
   private connection: Connection;
@@ -41,10 +40,7 @@ export class DataSyncService {
 
   async syncPdaState(faxRequestId: string, pdaAddress: string) {
     try {
-      const accountInfo = await this.connection.getAccountInfo(new PublicKey(pdaAddress));
-      if (!accountInfo) return null;
-
-      const state = await solanaKit.getLegacyConnection().getAccountInfo(new PublicKey(pdaAddress));
+      const state = await this.connection.getAccountInfo(new PublicKey(pdaAddress));
       if (!state) return null;
 
       await prisma.faxRequest.update({

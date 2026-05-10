@@ -1,5 +1,5 @@
 import { ActionGetResponse, ActionPostRequest, ActionPostResponse, createPostResponse } from "@solana/actions";
-import { PublicKey, Transaction } from "@solana/web3.js";
+import { PublicKey, Transaction, VersionedTransaction } from "@solana/web3.js";
 import { blockchainClient } from "./client";
 
 export class BlinkService {
@@ -12,10 +12,11 @@ export class BlinkService {
       title: "Approve Fax Request",
       description: `Approve payment of ${state.amount.toString()} tokens for Fax Request ${faxRequestPda.slice(0, 8)}...`,
       label: "Approve Now",
-      type: "action",
+      type: "action" as const,
       links: {
         actions: [
           {
+            type: "post",
             label: "Approve",
             href: `/api/v1/blinks/approve?pda=${faxRequestPda}`,
           }
@@ -28,13 +29,11 @@ export class BlinkService {
     const caregiver = new PublicKey(req.account);
     const pda = new PublicKey(pdaStr);
 
-    // Build the instruction
     const ix = await blockchainClient.program.methods
       .approveFaxRequest()
       .accounts({
         faxRequest: pda,
         caregiver: caregiver,
-        // approval pda and other accounts derived in builder
       })
       .instruction();
 
@@ -42,11 +41,11 @@ export class BlinkService {
     tx.recentBlockhash = (await blockchainClient.program.provider.connection.getLatestBlockhash()).blockhash;
     tx.feePayer = caregiver;
 
-    return await createPostResponse({
+    return createPostResponse({
       fields: {
-        transaction: tx,
-        message: "Approval transaction created",
-      },
+        transaction: tx as Transaction | VersionedTransaction,
+        type: "transaction" as const,
+      } as any,
     });
   }
 }
