@@ -1,16 +1,18 @@
 import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
-import { create, fetchAsset } from "@metaplex-foundation/mpl-core";
-import { generateSigner, signerIdentity, type PublicKey } from "@metaplex-foundation/umi";
+import { create } from "@metaplex-foundation/mpl-core";
+import { createSignerFromKeypair, generateSigner, signerIdentity, publicKey as toUmiPublicKey, type PublicKey, type Umi } from "@metaplex-foundation/umi";
 import { env } from "../../config/env";
 import { logger } from "../../utils/logger";
 
 export class MetaplexService {
-  private umi: any;
+  private umi: Umi;
 
   constructor() {
     this.umi = createUmi(env.SOLANA_RPC_URL);
-    const mySigner = generateSigner(this.umi);
-    this.umi.use(signerIdentity(mySigner));
+    const signer = loadAgentSigner(this.umi);
+    if (signer) {
+      this.umi.use(signerIdentity(signer));
+    }
   }
 
   async registerAgentAsNFT(agentId: string, metadata: any): Promise<PublicKey> {
@@ -28,6 +30,23 @@ export class MetaplexService {
       logger.error({ err: error }, "Metaplex Agent registration failed");
       throw error;
     }
+  }
+}
+
+function loadAgentSigner(umi: Umi) {
+  const hex = env.AGENT_PRIVATE_KEY;
+  if (!hex) return null;
+  try {
+    const bytes = Buffer.from(hex, "hex");
+    const pubkeyBytes = bytes.subarray(32, 64);
+    const keypair = {
+      publicKey: toUmiPublicKey(new Uint8Array(pubkeyBytes)),
+      secretKey: new Uint8Array(bytes),
+    };
+    return createSignerFromKeypair(umi, keypair);
+  } catch {
+    logger.warn("Failed to parse AGENT_PRIVATE_KEY for Metaplex");
+    return null;
   }
 }
 

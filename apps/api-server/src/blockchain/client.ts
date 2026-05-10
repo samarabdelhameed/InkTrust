@@ -2,6 +2,7 @@ import * as anchor from "@coral-xyz/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { RPC_URLS, COMMITMENT } from "./config";
 import { logger } from "../utils/logger";
+import { env } from "../config/env";
 
 let anchorIdl: any = {};
 try {
@@ -10,15 +11,29 @@ try {
   anchorIdl = {};
 }
 
+function loadAgentKeypair(): Keypair {
+  const hex = env.AGENT_PRIVATE_KEY;
+  if (hex) {
+    try {
+      const bytes = Buffer.from(hex, "hex");
+      return Keypair.fromSecretKey(new Uint8Array(bytes));
+    } catch {
+      logger.warn("Failed to parse AGENT_PRIVATE_KEY, using ephemeral keypair");
+    }
+  }
+  return Keypair.generate();
+}
+
 export class BlockchainClient {
   private _connection: Connection;
   private provider: anchor.AnchorProvider;
   private _program: anchor.Program | null = null;
+  private _wallet: anchor.Wallet;
 
   constructor(network: keyof typeof RPC_URLS = "devnet") {
     this._connection = new Connection(RPC_URLS[network], COMMITMENT);
-    const wallet = new anchor.Wallet(Keypair.generate());
-    this.provider = new anchor.AnchorProvider(this._connection, wallet, { commitment: COMMITMENT });
+    this._wallet = new anchor.Wallet(loadAgentKeypair());
+    this.provider = new anchor.AnchorProvider(this._connection, this._wallet, { commitment: COMMITMENT });
     if (anchorIdl && Object.keys(anchorIdl).length > 0) {
       try {
         this._program = new anchor.Program(anchorIdl as any, this.provider);
@@ -37,6 +52,10 @@ export class BlockchainClient {
 
   get connection(): Connection {
     return this._connection;
+  }
+
+  get agentPublicKey(): PublicKey {
+    return this._wallet.publicKey;
   }
 
   get isReady(): boolean {

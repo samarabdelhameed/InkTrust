@@ -7,10 +7,10 @@ const IV_LENGTH = 16;
 const TAG_LENGTH = 16;
 
 function deriveKey(secret: string): Buffer {
-  return crypto.scryptSync(secret, "inktrust-arcium-salt", 32);
+  return crypto.scryptSync(secret, "inktrust-encryption-salt", 32);
 }
 
-export class ArciumService {
+export class EncryptionService {
   private key: Buffer;
 
   constructor() {
@@ -18,39 +18,29 @@ export class ArciumService {
   }
 
   async encrypt(data: string): Promise<{ ciphertext: string; iv: string; tag: string }> {
-    try {
-      const iv = crypto.randomBytes(IV_LENGTH);
-      const cipher = crypto.createCipheriv(ALGORITHM, this.key, iv);
+    const iv = crypto.randomBytes(IV_LENGTH);
+    const cipher = crypto.createCipheriv(ALGORITHM, this.key, iv);
 
-      let encrypted = cipher.update(data, "utf8", "hex");
-      encrypted += cipher.final("hex");
-      const tag = cipher.getAuthTag().toString("hex");
+    let encrypted = cipher.update(data, "utf8", "hex");
+    encrypted += cipher.final("hex");
+    const tag = cipher.getAuthTag().toString("hex");
 
-      logger.info("Data encrypted via Arcium-compatible AES-256-GCM");
-      return { ciphertext: encrypted, iv: iv.toString("hex"), tag };
-    } catch (error) {
-      logger.error({ err: error }, "Arcium encryption failed");
-      throw error;
-    }
+    logger.info("Data encrypted (AES-256-GCM)");
+    return { ciphertext: encrypted, iv: iv.toString("hex"), tag };
   }
 
   async decrypt(ciphertext: string, iv: string, tag: string): Promise<string> {
-    try {
-      const decipher = crypto.createDecipheriv(
-        ALGORITHM,
-        this.key,
-        Buffer.from(iv, "hex"),
-      );
-      decipher.setAuthTag(Buffer.from(tag, "hex"));
+    const decipher = crypto.createDecipheriv(
+      ALGORITHM,
+      this.key,
+      Buffer.from(iv, "hex"),
+    );
+    decipher.setAuthTag(Buffer.from(tag, "hex"));
 
-      let decrypted = decipher.update(ciphertext, "hex", "utf8");
-      decrypted += decipher.final("utf8");
+    let decrypted = decipher.update(ciphertext, "hex", "utf8");
+    decrypted += decipher.final("utf8");
 
-      return decrypted;
-    } catch (error) {
-      logger.error({ err: error }, "Arcium decryption failed");
-      throw error;
-    }
+    return decrypted;
   }
 
   async encryptFaxData(faxContent: Buffer): Promise<string> {
@@ -66,4 +56,4 @@ export class ArciumService {
   }
 }
 
-export const arciumService = new ArciumService();
+export const encryptionService = new EncryptionService();

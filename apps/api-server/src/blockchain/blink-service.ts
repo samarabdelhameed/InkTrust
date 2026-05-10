@@ -5,22 +5,14 @@ import { logger } from "../utils/logger";
 
 export class BlinkService {
   async generateFaxApprovalBlink(faxRequestPda: string): Promise<ActionGetResponse> {
-    if (faxRequestPda.startsWith("simulated-fax-")) {
+    if (!blockchainClient.isReady) {
       return {
         icon: "https://inktrust.app/icon.png",
         title: "InkTrust — Approve Transaction",
-        description: "A family member has requested your approval via fax. Review and approve or reject.",
-        label: "Approve",
+        description: "Awaiting smart contract deployment. Please check back soon.",
+        label: "Unavailable",
         type: "action" as const,
-        links: {
-          actions: [
-            {
-              type: "post",
-              label: "Approve",
-              href: `/api/v1/actions/approve/${faxRequestPda}`,
-            },
-          ],
-        },
+        disabled: true,
       };
     }
 
@@ -48,9 +40,7 @@ export class BlinkService {
   async handleBlinkPost(req: ActionPostRequest, pdaStr: string): Promise<ActionPostResponse> {
     const caregiver = new PublicKey(req.account);
 
-    if (pdaStr.startsWith("simulated-fax-")) {
-      logger.info({ pdaStr, caregiver: req.account }, "Processing simulated fax approval");
-
+    if (!blockchainClient.isReady) {
       const tx = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: caregiver,
@@ -58,7 +48,6 @@ export class BlinkService {
           lamports: 0,
         }),
       );
-
       const blockhash = await blockchainClient.connection.getLatestBlockhash();
       tx.recentBlockhash = blockhash.blockhash;
       tx.feePayer = caregiver;
@@ -67,7 +56,7 @@ export class BlinkService {
         fields: {
           transaction: tx as Transaction | VersionedTransaction,
           type: "transaction" as const,
-          message: "Simulated approval processed successfully",
+          message: "Smart contract not yet deployed — dry-run mode",
         } as any,
       });
     }

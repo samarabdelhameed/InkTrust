@@ -5,7 +5,7 @@ import { logger } from '../utils/logger';
 import { dbService } from 'db-schema';
 import { storageService } from '../services';
 import { geminiService } from '../services/ai/gemini.service';
-import { arciumService } from '../services/arcium';
+import { encryptionService } from '../services/arcium';
 import { swigService } from '../services/swig';
 import { moonPayService } from '../services/moonpay';
 import { telnyxFaxOutService } from '../services/telnyx/fax-out';
@@ -48,7 +48,7 @@ export async function setupQueues() {
       aiResult = await geminiService.parseFaxIntent(Buffer.from(mediaBuffer));
     }
 
-    const encryptedIntent = await arciumService.encrypt(JSON.stringify(aiResult));
+    const encryptedIntent = await encryptionService.encrypt(JSON.stringify(aiResult));
 
     await ocrQueue.add('process-ocr', {
       faxId,

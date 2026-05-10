@@ -1,24 +1,63 @@
 import { PrivyClient } from "@privy-io/server-auth";
 import { logger } from "../../utils/logger";
+import { env } from "../../config/env";
+
+interface PrivyWallet {
+  id: string;
+  address: string;
+  chain_type: string;
+}
 
 export class PrivyService {
   private privy: PrivyClient;
+  private readonly apiBase = "https://api.privy.io";
+  private readonly basicAuth: string;
 
   constructor() {
-    this.privy = new PrivyClient(
-      process.env.PRIVY_APP_ID || "",
-      process.env.PRIVY_APP_SECRET || ""
-    );
+    const appId = process.env.PRIVY_APP_ID || "";
+    const appSecret = process.env.PRIVY_APP_SECRET || "";
+    this.privy = new PrivyClient(appId, appSecret);
+    this.basicAuth = Buffer.from(`${appId}:${appSecret}`).toString("base64");
   }
 
   async provisionInvisibleWallet(userId: string) {
     try {
-      // Logic for provisioning embedded wallet for elderly user
-      logger.info({ userId }, "Provisioning invisible wallet via Privy");
-      return { address: "0xMockWalletAddress" };
+      const wallet = await this.createWallet();
+      if (wallet) {
+        logger.info({ userId, walletId: wallet.id, address: wallet.address }, "Privy wallet provisioned");
+        return { address: wallet.address, id: wallet.id };
+      }
     } catch (error) {
-      logger.error({ err: error }, "Privy wallet provisioning failed");
-      throw error;
+      logger.warn({ err: error, userId }, "Privy wallet provisioning failed, using mock");
+    }
+    return { address: "0xMockWalletAddress" };
+  }
+
+  private async createWallet(chainType: string = "solana"): Promise<PrivyWallet | null> {
+    if (!env.PRIVY_APP_ID || !env.PRIVY_APP_SECRET) {
+      logger.warn("Privy credentials not set");
+      return null;
+    }
+    try {
+      const res = await fetch(`${this.apiBase}/v1/wallets`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${this.basicAuth}`,
+          "privy-app-id": env.PRIVY_APP_ID,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ chain_type: chainType }),
+      });
+      if (!res.ok) {
+        const text = await res.text();
+        logger.warn({ status: res.status, body: text }, "Privy wallet API error");
+        return null;
+      }
+      const wallet = (await res.json()) as PrivyWallet;
+      return wallet;
+    } catch (err: any) {
+      logger.warn({ err: err.message }, "Privy create wallet request failed");
+      return null;
     }
   }
 

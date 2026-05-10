@@ -29,10 +29,12 @@ export const env = cleanEnv(process.env, {
   COINBASE_CDP_API_KEY_PRIVATE_KEY: str({ default: '' }),
   SWIG_API_KEY: str({ default: '' }),
   MOONPAY_SECRET_KEY: str({ default: '' }),
+  MOONPAY_PUBLISHABLE_KEY: str({ default: '' }),
 
   // Fax
   TELNYX_API_KEY: str({ default: '' }),
   TELNYX_PUBLIC_KEY: str({ default: '' }),
+  TELNYX_CONNECTION_ID: str({ default: '' }),
   SYSTEM_FAX_NUMBER: str({ default: '' }),
 
   // AI
