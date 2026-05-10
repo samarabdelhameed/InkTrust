@@ -7,9 +7,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// ============================================================
-// 1. USERS & IDENTITY
-// ============================================================
+// ========================================
+// CORE MODELS
+// ========================================
+
 model User {
   id                      String    @id @default(uuid())
   faxNumber               String    @unique
@@ -18,22 +19,20 @@ model User {
   caregiverWalletAddress  String?
   worldIdVerified         Boolean   @default(false)
   spendingLimit           Decimal   @default(0.0) @db.Decimal(18, 8)
-  accountStatus           UserStatus @default(ACTIVE)
-  onboardingCompleted     Boolean   @default(false)
+  status                  UserStatus @default(ACTIVE)
   
   lastActivityAt          DateTime  @default(now())
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
-  deletedAt               DateTime?
 
   // Relations
+  faxJobs                 FaxJob[]
+  approvals               ApprovalRequest[]
   trustedContacts         TrustedContact[]
-  jobs                    Job[]
-  medicalRecords          MedicalRecord[]
-  transactions            FinancialTransaction[]
-  agentIdentities         AgentIdentity[]
-  artifacts               FileArtifact[]
-  approvals               Approval[]
+  transactions            Transaction[]
+  agentSessions           AgentSession[]
+  verifications           WorldIdVerification[]
+  spendingPolicy          SpendingPolicy?
 
   @@index([embeddedWalletAddress])
   @@index([faxNumber])
@@ -42,66 +41,66 @@ model User {
 enum UserStatus {
   ACTIVE
   SUSPENDED
-  UNDER_REVIEW
   DELETED
 }
 
-// ============================================================
-// 2. PHISHING-RESISTANT TRUSTED CONTACTS
-// ============================================================
-model TrustedContact {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  contactEmail    String
-  relationship    String
-  trustLevel      Int      @default(1)
-  isVerified      Boolean  @default(false)
-  publicKey       String?  // Optional on-chain identity
-  createdAt       DateTime @default(now())
-
-  @@unique([userId, contactEmail])
-}
-
-// ============================================================
-// 3. AI ORCHESTRATION & JOBS
-// ============================================================
-model Job {
+model FaxJob {
   id                String      @id @default(uuid())
   userId            String
   user              User        @relation(fields: [userId], references: [id])
-  intentType        String
-  intentHash        String      @unique // Links to Solana PDA
-  aiSummary         String?     @db.Text
-  extractedEntities Json?
-  confidenceScore   Float?
-  status            JobStatus   @default(PENDING)
-  priority          Int         @default(0)
-  requiresApproval  Boolean     @default(true)
-  approvalStatus    ApprovalStatus @default(PENDING)
   
-  queueId           String?     // BullMQ Job ID
-  retryCount        Int         @default(0)
+  externalFaxId     String      @unique // Telnyx ID
+  mediaUrl          String?     // S3 URL
+  status            JobStatus   @default(RECEIVED)
+  
+  intent            String?
+  amount            Decimal?    @db.Decimal(18, 8)
+  merchant          String?
+  medication        String?
+  urgency           String?     @default("NORMAL")
+  confidenceScore   Float?
+  
+  aiRawResponse     Json?
   
   createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
   completedAt       DateTime?
 
   // Relations
-  reviews           HumanReview[]
-  transactions      FinancialTransaction[]
-  artifacts         FileArtifact[]
-  approvals         Approval[]
+  approvalRequest   ApprovalRequest?
+  transactions      Transaction[]
+  auditReview       AuditReview?
+  mcpLogs           MCPExecutionLog[]
 
   @@index([userId, status])
 }
 
 enum JobStatus {
-  PENDING
+  RECEIVED
   PROCESSING
   AWAITING_APPROVAL
   EXECUTING
   COMPLETED
   FAILED
+}
+
+model ApprovalRequest {
+  id                String         @id @default(uuid())
+  faxJobId          String         @unique
+  faxJob            FaxJob         @relation(fields: [faxJobId], references: [id])
+  userId            String
+  user              User           @relation(fields: [userId], references: [id])
+  
+  status            ApprovalStatus @default(PENDING)
+  requiredSigners   Int            @default(1)
+  receivedSigners   Int            @default(0)
+  nonceAccount      String?        // Solana Durable Nonce
+  
+  expiresAt         DateTime
+  finalizedAt       DateTime?
+  createdAt         DateTime       @default(now())
+
+  @@index([userId, status])
 }
 
 enum ApprovalStatus {
@@ -111,148 +110,89 @@ enum ApprovalStatus {
   EXPIRED
 }
 
-// ============================================================
-// 4. HUMAN-IN-THE-LOOP & AUDIT
-// ============================================================
-model HumanReview {
-  id              String   @id @default(uuid())
-  jobId           String
-  job             Job      @relation(fields: [jobId], references: [id])
-  flagReason      String?
-  riskScore       Float?
-  operatorAction  String?
-  operatorNotes   String?  @db.Text
-  escalationLevel Int      @default(0)
-  reviewedBy      String?
-  reviewedAt      DateTime?
-}
-
-// ============================================================
-// 5. HYBRID FINANCIAL TRANSACTIONS
-// ============================================================
-model FinancialTransaction {
+model Transaction {
   id                String    @id @default(uuid())
   userId            String
   user              User      @relation(fields: [userId], references: [id])
-  jobId             String?
-  job               Job?      @relation(fields: [jobId], references: [id])
+  faxJobId          String?
+  faxJob            FaxJob?    @relation(fields: [faxJobId], references: [id])
   
-  txSignature       String?   @unique // Solana Signature
-  blockchainNetwork String    @default("devnet")
-  tokenMint         String?   // SPL Token Mint Address
-  paymentProvider   String?   // e.g., "solana", "stripe", "virtual-card"
-  virtualCardId     String?
-  
-  status            TxStatus  @default(PENDING)
+  txSignature       String    @unique
+  network           String    @default("devnet")
+  tokenMint         String?
   amount            Decimal   @db.Decimal(18, 8)
   currency          String    @default("SOL")
-  gasFees           Decimal?  @db.Decimal(18, 8)
-  executedAt        DateTime?
+  status            TxStatus  @default(CONFIRMED)
   
   createdAt         DateTime  @default(now())
-
-  @@index([txSignature])
-  @@index([userId, status])
 }
 
 enum TxStatus {
   PENDING
   CONFIRMED
   FAILED
-  REVERSED
 }
 
-// ============================================================
-// 6. AI AGENT REGISTRY
-// ============================================================
-model AgentIdentity {
+model TrustedContact {
   id              String   @id @default(uuid())
   userId          String
   user            User     @relation(fields: [userId], references: [id])
-  metaplexAssetId String?  @unique // Metaplex Core Asset ID
-  embeddedWallet  String   @unique
-  executionScope  Json?    // Define what the agent can do
-  sponsorPermissions Json?
-  policyEngineId  String?
-  activeStatus    Boolean  @default(true)
-  lastExecutionAt DateTime?
-}
-
-// ============================================================
-// 7. FILE ARTIFACTS (S3)
-// ============================================================
-model FileArtifact {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  jobId           String?
-  job             Job?     @relation(fields: [jobId], references: [id])
-  
-  s3Key           String   @unique
-  artifactType    String   // e.g., "FAX_IMAGE", "AI_REPORT", "RECEIPT"
-  mimeType        String
-  encryptionStatus Boolean  @default(false)
-  uploadedAt      DateTime @default(now())
-}
-
-// ============================================================
-// 8. POLICY & APPROVAL ORCHESTRATION
-// ============================================================
-model Approval {
-  id                String         @id @default(uuid())
-  jobId             String
-  job               Job            @relation(fields: [jobId], references: [id])
-  userId            String
-  user              User           @relation(fields: [userId], references: [id])
-  
-  policyType        String         // e.g., "THRESHOLD", "WHITELIST"
-  requiredSigners   Int            @default(1)
-  receivedSigners   Int            @default(0)
-  approvalDeadline  DateTime?
-  nonceAccount      String?        // Durable Nonce Account Pubkey
-  
-  status            ApprovalStatus @default(PENDING)
-  finalizedAt       DateTime?
-  createdAt         DateTime       @default(now())
-}
-
-// Existing model migration/update
-model MedicalRecord {
-  id              String   @id @default(uuid())
-  userId          String
-  user            User     @relation(fields: [userId], references: [id])
-  encryptedData   String
-  documentType    String
+  email           String
+  name            String
+  relation        String
+  isVerified      Boolean  @default(false)
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, email])
 }
 
-model AILog {
+model AuditReview {
   id              String   @id @default(uuid())
-  prompt          String
-  response        String?
-  modelUsed       String
-  executionTimeMs Int?
+  faxJobId        String   @unique
+  faxJob          FaxJob   @relation(fields: [faxJobId], references: [id])
+  riskScore       Float
+  moderatorAction String?
+  moderatorNotes  String?  @db.Text
+  reviewedAt      DateTime @default(now())
+}
+
+model AgentSession {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  agentId         String
+  scope           Json
+  expiresAt       DateTime
   createdAt       DateTime @default(now())
 }
 
-model AuditLog {
+model WorldIdVerification {
   id              String   @id @default(uuid())
-  action          String
-  entityType      String
-  entityId        String
-  actorId         String?
-  timestamp       DateTime @default(now())
-  details         Json?
+  userId          String
+  user            User     @relation(fields: [userId], references: [id])
+  nullifierHash   String   @unique
+  merkleRoot      String
+  proof           String   @db.Text
+  verifiedAt      DateTime @default(now())
 }
 
-model QueueJob {
+model SpendingPolicy {
   id              String   @id @default(uuid())
-  queueName       String
-  jobId           String   @unique
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+  dailyLimit      Decimal  @db.Decimal(18, 8)
+  monthlyLimit    Decimal  @db.Decimal(18, 8)
+  requiresMfa     Boolean  @default(true)
+}
+
+model MCPExecutionLog {
+  id              String   @id @default(uuid())
+  faxJobId        String
+  faxJob          FaxJob   @relation(fields: [faxJobId], references: [id])
+  toolName        String
+  input           Json
+  output          Json?
   status          String
-  data            Json
-  error           String?
+  durationMs      Int
   createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
 }

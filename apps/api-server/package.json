@@ -4,11 +4,13 @@
   "private": true,
   "description": "InkTrust Backend — Fax ingestion, AI orchestration, Solana Blinks, and agent commerce",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node dist/server.js",
     "lint": "eslint src/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "express": "^4.21.0",
@@ -32,8 +34,12 @@
     "express-rate-limit": "^7.2.0",
     "envalid": "^8.0.0",
     "cors-gate": "^1.1.1",
+    "@aws-sdk/client-s3": "^3.600.0",
+    "@aws-sdk/s3-request-presigner": "^3.600.0",
     "@aws-sdk/client-ses": "^3.600.0",
+    "playwright": "^1.48.0",
     "stripe": "^15.12.0",
+    "dotenv": "^16.4.0",
     "db-schema": "workspace:*",
     "shared-types": "workspace:*"
   },
@@ -45,6 +51,7 @@
     "@types/node": "^20.0.0",
     "@types/pino": "^7.0.5",
     "@types/express-rate-limit": "^6.0.0",
-    "eslint": "^9.0.0"
+    "eslint": "^9.0.0",
+    "vitest": "^1.6.0"
   }
 }
