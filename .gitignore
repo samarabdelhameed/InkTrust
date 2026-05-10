@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+out/
+target/
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Anchor / Solana
+anchor/target/
+anchor/.anchor/
+test-ledger/
+
+# Prisma
+packages/db-schema/prisma/migrations/
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*

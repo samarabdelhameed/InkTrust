@@ -1,0 +1,6 @@
+{
+  "name": "mcp-tools",
+  "version": "0.1.0",
+  "private": true,
+  "description": "InkTrust MCP Tool Servers — Phantom blockchain tools & Playwright web automation"
+}

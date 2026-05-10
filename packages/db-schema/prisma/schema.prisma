@@ -1,0 +1,98 @@
+// ============================================================
+// InkTrust — Prisma Database Schema
+// ============================================================
+// Off-chain PostgreSQL schema for heavy data (fax images, AI results).
+// Sensitive trust data lives on-chain (Solana PDAs).
+// ============================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+/// Registered elderly user (fax sender)
+model User {
+  id              String   @id @default(uuid())
+  faxNumber       String   @unique @map("fax_number")
+  proxyEmail      String   @unique @map("proxy_email")
+  embeddedWallet  String   @unique @map("embedded_wallet")
+  dailySpendLimit Int      @default(3000) @map("daily_spend_limit") // JPY
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  caregivers      Caregiver[]
+  faxRequests     FaxRequest[]
+  trustedContacts TrustedContact[]
+
+  @@map("users")
+}
+
+/// Caregiver (family member) authorized for on-chain approvals
+model Caregiver {
+  id            String @id @default(uuid())
+  userId        String @map("user_id")
+  walletAddress String @map("wallet_address")
+  name          String
+  phone         String
+  role          CaregiverRole @default(PRIMARY)
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("caregivers")
+}
+
+/// Fax request lifecycle tracking
+model FaxRequest {
+  id            String        @id @default(uuid())
+  userId        String        @map("user_id")
+  status        RequestStatus @default(RECEIVED)
+  faxMediaUrl   String        @map("fax_media_url")     // S3/R2 URL
+  aiIntent      Json?         @map("ai_intent")          // Gemini parsed result
+  onchainPda    String?       @map("onchain_pda")        // Solana PDA address
+  blinkUrl      String?       @map("blink_url")          // Approval Blink URL
+  amountJpy     Int?          @map("amount_jpy")
+  txSignature   String?       @map("tx_signature")       // Solana TX hash
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("fax_requests")
+}
+
+/// Trusted contacts whitelisted for the senior's protected inbox
+model TrustedContact {
+  id           String @id @default(uuid())
+  userId       String @map("user_id")
+  email        String
+  name         String
+  relationship String
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("trusted_contacts")
+}
+
+enum CaregiverRole {
+  PRIMARY
+  SECONDARY
+}
+
+enum RequestStatus {
+  RECEIVED
+  AI_PROCESSING
+  INTENT_EXTRACTED
+  WAITING_APPROVAL
+  APPROVED
+  EXECUTING
+  EXECUTED
+  FAILED
+  CLOSED
+}

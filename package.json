@@ -1,0 +1,36 @@
+{
+  "name": "inktrust-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "InkTrust — The Analog-to-Onchain Bridge for Elderly Digital Inclusion",
+  "scripts": {
+    "dev:web": "pnpm --filter web-dashboard dev",
+    "dev:api": "pnpm --filter api-server dev",
+    "build:web": "pnpm --filter web-dashboard build",
+    "build:api": "pnpm --filter api-server build",
+    "anchor:build": "cd anchor && anchor build",
+    "anchor:test": "cd anchor && anchor test",
+    "anchor:deploy": "cd anchor && anchor deploy",
+    "db:generate": "pnpm --filter db-schema generate",
+    "db:migrate": "pnpm --filter db-schema migrate",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck"
+  },
+  "keywords": [
+    "solana",
+    "blockchain",
+    "ai-agents",
+    "elderly-care",
+    "analog-bridge",
+    "mcp",
+    "gemini",
+    "metaplex",
+    "swig"
+  ],
+  "author": "Samar Abdelhameed",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
