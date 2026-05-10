@@ -14,4 +14,7 @@ export const env = cleanEnv(process.env, {
   S3_BUCKET: str({ default: 'inktrust-assets' }),
   AWS_ACCESS_KEY_ID: str(),
   AWS_SECRET_ACCESS_KEY: str(),
+  SES_FROM_EMAIL: str({ default: 'notifications@inktrust.io' }),
+  STRIPE_SECRET_KEY: str({ devDefault: 'sk_test_mock' }),
+  STRIPE_WEBHOOK_SECRET: str({ devDefault: 'whsec_mock' }),
 });
