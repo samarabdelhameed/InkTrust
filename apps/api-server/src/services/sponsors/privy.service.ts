@@ -1,5 +1,5 @@
 import { PrivyClient } from "@privy-io/server-auth";
-import { logger } from "../../lib/logger";
+import { logger } from "../../utils/logger";
 
 export class PrivyService {
   private privy: PrivyClient;

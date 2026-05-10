@@ -1,2 +1,9 @@
 export { StorageService, storageService } from './s3';
 export { PlaywrightService, playwrightService } from './playwright';
+export { ArciumService, arciumService } from './arcium';
+export { WorldIdService, worldIdService } from './world-id';
+export { SwigService, swigService } from './swig';
+export { MoonPayService, moonPayService } from './moonpay';
+export { X402Service, x402Service } from './x402';
+export { HeliusService, heliusService } from './helius';
+export { TelnyxFaxOutService, telnyxFaxOutService } from './telnyx/fax-out';

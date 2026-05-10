@@ -1,6 +1,12 @@
 import { PublicKey } from "@solana/web3.js";
 
-export const PROGRAM_ID = new PublicKey("Ink7777777777777777777777777777777777777777");
+let _programId: PublicKey;
+try {
+  _programId = new PublicKey("7rV2abnFpVCmE5GrF1bk2C5amL3TTeKz1GxJFLWoq5Tq");
+} catch {
+  _programId = PublicKey.default;
+}
+export const PROGRAM_ID = _programId;
 
 export const RPC_URLS = {
   mainnet: process.env.RPC_URL_MAINNET || "https://api.mainnet-beta.solana.com",

@@ -1,32 +1,39 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
+import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
+import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
+import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import { clusterApiUrl } from "@solana/web3.js";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// TODO: Import and configure Solana wallet providers
-// import { WalletAdapterNetwork } from "@solana/wallet-adapter-base";
-// import { PhantomWalletAdapter } from "@solana/wallet-adapter-phantom";
-// import { ConnectionProvider, WalletProvider } from "@solana/wallet-adapter-react";
-// import { PrivyProvider } from "@privy-io/react-auth";
+require("@solana/wallet-adapter-react-ui/styles.css");
 
 interface ProvidersProps {
   children: ReactNode;
 }
 
-/**
- * Global providers wrapper for the InkTrust dashboard.
- * Configures: Solana RPC connection, wallet adapters (Phantom/Privy),
- * and any global state providers.
- */
+const queryClient = new QueryClient();
+
 export function Providers({ children }: ProvidersProps) {
-  // TODO: Configure Helius RPC endpoint
-  // const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL;
-  // const network = WalletAdapterNetwork.Devnet;
-  // const wallets = [new PhantomWalletAdapter()];
+  const network = WalletAdapterNetwork.Devnet;
+  const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC_URL || clusterApiUrl(network);
+
+  const wallets = useMemo(
+    () => [new PhantomWalletAdapter()],
+    [],
+  );
 
   return (
-    <>
-      {/* TODO: Wrap with ConnectionProvider, WalletProvider, PrivyProvider */}
-      {children}
-    </>
+    <QueryClientProvider client={queryClient}>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            {children}
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </QueryClientProvider>
   );
 }

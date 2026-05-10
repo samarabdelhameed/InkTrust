@@ -5,10 +5,10 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-inktrust_core = "Ink7777777777777777777777777777777777777777"
+inktrust_core = "D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR"
 
 [programs.devnet]
-inktrust_core = "Ink7777777777777777777777777777777777777777"
+inktrust_core = "D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR"
 
 [registry]
 url = "https://api.apr.dev"

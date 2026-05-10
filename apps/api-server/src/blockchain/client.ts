@@ -1,6 +1,7 @@
 import * as anchor from "@coral-xyz/anchor";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
 import { RPC_URLS, COMMITMENT } from "./config";
+import { logger } from "../utils/logger";
 
 let anchorIdl: any = {};
 try {
@@ -10,31 +11,53 @@ try {
 }
 
 export class BlockchainClient {
-  private connection: Connection;
+  private _connection: Connection;
   private provider: anchor.AnchorProvider;
-  public program: anchor.Program;
+  private _program: anchor.Program | null = null;
 
   constructor(network: keyof typeof RPC_URLS = "devnet") {
-    this.connection = new Connection(RPC_URLS[network], COMMITMENT);
+    this._connection = new Connection(RPC_URLS[network], COMMITMENT);
     const wallet = new anchor.Wallet(Keypair.generate());
-    this.provider = new anchor.AnchorProvider(this.connection, wallet, { commitment: COMMITMENT });
-    this.program = new anchor.Program(anchorIdl as any, this.provider);
+    this.provider = new anchor.AnchorProvider(this._connection, wallet, { commitment: COMMITMENT });
+    if (anchorIdl && Object.keys(anchorIdl).length > 0) {
+      try {
+        this._program = new anchor.Program(anchorIdl as any, this.provider);
+      } catch (e) {
+        logger.warn({ err: e }, "Failed to initialize Anchor program");
+      }
+    }
+  }
+
+  get program(): anchor.Program {
+    if (!this._program) {
+      throw new Error("Anchor program not initialized — deploy smart contract first");
+    }
+    return this._program;
+  }
+
+  get connection(): Connection {
+    return this._connection;
+  }
+
+  get isReady(): boolean {
+    return this._program !== null;
   }
 
   async getFaxRequestState(pda: PublicKey) {
     try {
-      return await (this.program.account as any).faxRequestState.fetch(pda);
+      if (!this._program) throw new Error("Program not ready");
+      return await (this._program.account as any).faxRequestState.fetch(pda);
     } catch {
       return { owner: PublicKey.default, caregiver: PublicKey.default, amount: 0, intent_hash: new Uint8Array(32), is_approved: false, is_executed: false, created_at: 0, bump: 0 };
     }
   }
 
   async getBalance(pubkey: PublicKey) {
-    return await this.connection.getBalance(pubkey);
+    return await this._connection.getBalance(pubkey);
   }
 
   async getTransactionSignature(sig: string) {
-    return await this.connection.getTransaction(sig, { maxSupportedTransactionVersion: 0 });
+    return await this._connection.getTransaction(sig, { maxSupportedTransactionVersion: 0 });
   }
 }
 

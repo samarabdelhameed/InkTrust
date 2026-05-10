@@ -9,7 +9,7 @@ pub mod utils;
 
 use instructions::*;
 
-declare_id!("Ink7777777777777777777777777777777777777777");
+declare_id!("D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR");
 
 #[program]
 pub mod inktrust_core {

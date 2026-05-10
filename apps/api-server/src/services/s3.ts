@@ -1,5 +1,6 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand, ListObjectsV2Command } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { env } from "../config/env";
 
 export class StorageService {
   private client: S3Client;
@@ -8,15 +9,15 @@ export class StorageService {
 
   constructor() {
     this.client = new S3Client({
-      region: process.env.AWS_REGION || "us-east-1",
+      region: env.AWS_REGION,
       credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
+        accessKeyId: env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: env.AWS_SECRET_ACCESS_KEY,
       },
-      endpoint: process.env.S3_ENDPOINT,
+      endpoint: env.S3_ENDPOINT || undefined,
       forcePathStyle: true,
     });
-    this.bucket = process.env.S3_BUCKET || "inktrust-assets";
+    this.bucket = env.S3_BUCKET;
   }
 
   async uploadFile(key: string, body: Buffer | Uint8Array | string, contentType: string): Promise<string> {

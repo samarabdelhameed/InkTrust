@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { env } from '../../lib/env';
-import { logger } from '../../lib/logger';
+import { env } from '../../config/env';
+import { logger } from '../../utils/logger';
 
 export class GeminiService {
   private genAI: GoogleGenerativeAI;
