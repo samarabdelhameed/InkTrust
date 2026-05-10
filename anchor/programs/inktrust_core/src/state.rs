@@ -25,7 +25,7 @@ pub struct FaxRequestState {
 
     /// Encrypted hash of the fax request details (medication name, etc.)
     /// Encrypted via Arcium for on-chain privacy.
-    pub request_hash: [u8; 32],     // 32 bytes
+    pub intent_hash: [u8; 32],      // 32 bytes
 
     /// Unix timestamp when the request was created.
     pub created_at: i64,            // 8 bytes

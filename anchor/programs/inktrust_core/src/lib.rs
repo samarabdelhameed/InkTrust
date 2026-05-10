@@ -1,4 +1,5 @@
 use anchor_lang::prelude::*;
+use anchor_spl::token::{self, Token, TokenAccount, Transfer};
 
 pub mod state;
 use state::*;
@@ -14,7 +15,7 @@ pub mod inktrust_core {
     pub fn initialize_request(
         ctx: Context<InitializeRequest>,
         amount: u64,
-        request_hash: [u8; 32],
+        intent_hash: [u8; 32],
     ) -> Result<()> {
         let request = &mut ctx.accounts.fax_request;
         request.owner = ctx.accounts.owner.key();
@@ -22,7 +23,7 @@ pub mod inktrust_core {
         request.amount = amount;
         request.is_approved = false;
         request.is_executed = false;
-        request.request_hash = request_hash;
+        request.intent_hash = intent_hash;
         request.created_at = Clock::get()?.unix_timestamp;
         request.bump = ctx.bumps.fax_request;
 
@@ -52,20 +53,19 @@ pub mod inktrust_core {
         require!(request.is_approved, InkTrustError::NotApproved);
         require!(!request.is_executed, InkTrustError::AlreadyExecuted);
 
-        // Transfer SOL from owner to merchant
-        let transfer_ix = anchor_lang::system_program::Transfer {
-            from: ctx.accounts.owner.to_account_info(),
-            to: ctx.accounts.merchant.to_account_info(),
+        // CPI to SPL Token Program for Stablecoin (CASH/USDC) payment
+        let cpi_accounts = Transfer {
+            from: ctx.accounts.owner_token_account.to_account_info(),
+            to: ctx.accounts.merchant_token_account.to_account_info(),
+            authority: ctx.accounts.owner.to_account_info(),
         };
-        let cpi_ctx = CpiContext::new(
-            ctx.accounts.system_program.to_account_info(),
-            transfer_ix,
-        );
-        anchor_lang::system_program::transfer(cpi_ctx, request.amount)?;
+        let cpi_program = ctx.accounts.token_program.to_account_info();
+        let cpi_ctx = CpiContext::new(cpi_program, cpi_accounts);
+        token::transfer(cpi_ctx, request.amount)?;
 
         request.is_executed = true;
 
-        msg!("InkTrust: Purchase executed — {} lamports transferred to merchant", request.amount);
+        msg!("InkTrust: Purchase executed — {} stablecoin transferred to merchant", request.amount);
         Ok(())
     }
 
@@ -130,15 +130,17 @@ pub struct ExecutePurchase<'info> {
     pub fax_request: Account<'info, FaxRequestState>,
 
     /// The senior's embedded wallet (source of funds).
-    #[account(mut)]
     pub owner: Signer<'info>,
 
-    /// The merchant receiving payment.
-    /// CHECK: This is the merchant's wallet address.
+    /// The senior's stablecoin token account.
     #[account(mut)]
-    pub merchant: UncheckedAccount<'info>,
+    pub owner_token_account: Account<'info, TokenAccount>,
 
-    pub system_program: Program<'info, System>,
+    /// The merchant's stablecoin token account.
+    #[account(mut)]
+    pub merchant_token_account: Account<'info, TokenAccount>,
+
+    pub token_program: Program<'info, Token>,
 }
 
 #[derive(Accounts)]
