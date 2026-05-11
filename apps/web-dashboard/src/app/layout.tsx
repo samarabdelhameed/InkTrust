@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -23,19 +24,19 @@ export default function RootLayout({
         </div>
         <nav className="fixed top-0 left-0 right-0 z-50 flex justify-center p-6">
           <div className="glass px-8 py-4 rounded-full flex items-center gap-12">
-            <div className="flex items-center gap-2">
+            <Link href="/" className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-neon-gradient flex items-center justify-center font-bold text-xs">I</div>
               <span className="font-bold tracking-tight text-xl">InkTrust</span>
-            </div>
+            </Link>
             <div className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
-              <a href="#" className="hover:text-primary-neon transition-colors">Platform</a>
-              <a href="#" className="hover:text-primary-neon transition-colors">AI Agents</a>
-              <a href="#" className="hover:text-primary-neon transition-colors">Solana</a>
-              <a href="#" className="hover:text-primary-neon transition-colors">Docs</a>
+              <Link href="/#platform" className="hover:text-primary-neon transition-colors">Platform</Link>
+              <Link href="/#ai" className="hover:text-primary-neon transition-colors">AI Agents</Link>
+              <Link href="/#solana" className="hover:text-primary-neon transition-colors">Solana</Link>
+              <Link href="/docs" className="hover:text-primary-neon transition-colors">Docs</Link>
             </div>
-            <button className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold border border-white/10">
+            <Link href="/demo" className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all text-xs font-bold border border-white/10">
               Launch App
-            </button>
+            </Link>
           </div>
         </nav>
         <main className="relative z-10">{children}</main>
