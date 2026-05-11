@@ -7,537 +7,196 @@ import {
   ArrowLeft,
   Settings,
   Bell,
-  BellOff,
   TrendingUp,
   Clock,
-  CheckCircle2,
-  XCircle,
   Wallet,
   Shield,
-  Sliders,
+  CreditCard,
+  Plus,
+  Search,
+  Filter,
+  MessageSquare,
+  History,
+  LayoutGrid,
+  PieChart
 } from "lucide-react";
 import { ApprovalCard } from "../../components/ApprovalCard";
 import { RiskBadge, RiskScoreBar } from "../../components/RiskBadge";
 
-type Approval = {
-  id: string;
-  seniorName: string;
-  merchant: string;
-  amount: number;
-  intent: string;
-  riskScore: number;
-  timestamp: string;
-};
-
-type Action = "approved" | "rejected";
-
-const initialApprovals: Approval[] = [
-  {
-    id: "1",
-    seniorName: "Ahmed",
-    merchant: "Al-Ahli Pharmacy",
-    amount: 4200,
-    intent: "Prescription refill - blood pressure medication",
-    riskScore: 25,
-    timestamp: "Today, 10:32 AM",
-  },
-  {
-    id: "2",
-    seniorName: "Fatima",
-    merchant: "Carrefour Grocery",
-    amount: 8500,
-    intent: "Weekly grocery delivery order",
-    riskScore: 55,
-    timestamp: "Today, 9:15 AM",
-  },
-  {
-    id: "3",
-    seniorName: "Mohammed",
-    merchant: "SEPA Electricity",
-    amount: 12000,
-    intent: "Monthly utility bill payment",
-    riskScore: 12,
-    timestamp: "Yesterday, 4:45 PM",
-  },
-  {
-    id: "4",
-    seniorName: "Aisha",
-    merchant: "Al-Noor Medical Center",
-    amount: 15000,
-    intent: "Scheduled doctor consultation & lab tests",
-    riskScore: 78,
-    timestamp: "Yesterday, 2:20 PM",
-  },
-  {
-    id: "5",
-    seniorName: "Yusuf",
-    merchant: "FreshMart Delivery",
-    amount: 3200,
-    intent: "Fresh fruits and vegetables order",
-    riskScore: 8,
-    timestamp: "Yesterday, 11:00 AM",
-  },
+const initialApprovals = [
+  { id: "1", seniorName: "Ahmed", merchant: "Al-Ahli Pharmacy", amount: 4200, intent: "Prescription refill - blood pressure medication", riskScore: 25, timestamp: "10:32 AM" },
+  { id: "2", seniorName: "Fatima", merchant: "Carrefour Grocery", amount: 8500, intent: "Weekly grocery delivery order", riskScore: 55, timestamp: "9:15 AM" },
+  { id: "3", seniorName: "Mohammed", merchant: "SEPA Electricity", amount: 12000, intent: "Monthly utility bill payment", riskScore: 12, timestamp: "Yesterday" },
+  { id: "4", seniorName: "Aisha", merchant: "Al-Noor Medical Center", amount: 15000, intent: "Scheduled doctor consultation & lab tests", riskScore: 78, timestamp: "Yesterday" },
 ];
 
 export default function FamilyDashboardPage() {
-  const [approvals, setApprovals] = useState<Approval[]>(initialApprovals);
-  const [notifications, setNotifications] = useState(true);
-  const [dailyLimit, setDailyLimit] = useState(10000);
-  const [monthlyLimit, setMonthlyLimit] = useState(50000);
-
-  const dailySpend = 4200;
-  const monthlySpend = 24700;
-
-  const [approvedToday, setApprovedToday] = useState(2);
-  const [rejectedToday, setRejectedToday] = useState(1);
-
-  const handleAction = (id: string, action: Action) => {
-    setApprovals((prev) => prev.filter((a) => a.id !== id));
-    if (action === "approved") setApprovedToday((p) => p + 1);
-    if (action === "rejected") setRejectedToday((p) => p + 1);
-  };
-
-  const pendingCount = approvals.length;
-  const avgRiskScore =
-    approvals.length > 0
-      ? Math.round(
-          approvals.reduce((sum, a) => sum + a.riskScore, 0) / approvals.length
-        )
-      : 0;
-
-  const highRiskCount = approvals.filter((a) => a.riskScore >= 60).length;
+  const [approvals, setApprovals] = useState(initialApprovals);
+  const [dailyLimit] = useState(10000);
+  const [dailySpend] = useState(4200);
 
   return (
-    <div className="min-h-screen bg-[#faf8f5]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-between mb-8"
-        >
-          <div className="flex items-center gap-4">
-            <Link
-              href="/"
-              className="w-10 h-10 rounded-xl bg-white border border-[rgb(25_35_75_/_0.06)] flex items-center justify-center text-[rgb(25_35_75)] hover:border-[rgb(25_35_75_/_0.15)] transition-all"
-            >
-              <ArrowLeft size={18} />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-[rgb(25_35_75)]">
-                Family Dashboard
-              </h1>
-              <p className="text-sm text-[rgb(25_35_75_/_0.5)]">
-                Review and manage approval requests from your family
-              </p>
+    <div className="min-h-screen pt-28 pb-12 px-6 flex gap-8 max-w-[1600px] mx-auto">
+      
+      {/* 1. THIN SIDEBAR */}
+      <aside className="hidden lg:flex flex-col gap-8 w-20 items-center py-8 glass rounded-[40px] h-[calc(100vh-140px)] sticky top-28">
+         <div className="w-12 h-12 rounded-2xl bg-primary-neon/20 flex items-center justify-center text-primary-neon"><LayoutGrid size={24} /></div>
+         <div className="w-12 h-12 rounded-2xl hover:bg-white/5 flex items-center justify-center text-white/30 hover:text-white transition-all cursor-pointer"><PieChart size={24} /></div>
+         <div className="w-12 h-12 rounded-2xl hover:bg-white/5 flex items-center justify-center text-white/30 hover:text-white transition-all cursor-pointer"><History size={24} /></div>
+         <div className="w-12 h-12 rounded-2xl hover:bg-white/5 flex items-center justify-center text-white/30 hover:text-white transition-all cursor-pointer"><MessageSquare size={24} /></div>
+         <div className="mt-auto w-12 h-12 rounded-2xl hover:bg-white/5 flex items-center justify-center text-white/30 hover:text-white transition-all cursor-pointer"><Settings size={24} /></div>
+      </aside>
+
+      {/* 2. MAIN CONTENT AREA */}
+      <main className="flex-1 space-y-10">
+        
+        {/* Welcome & Search */}
+        <header className="flex justify-between items-end">
+           <div>
+              <h1 className="text-4xl font-black mb-2">My Dashboard</h1>
+              <p className="text-white/30 text-sm">Managing trust for 5 family members</p>
+           </div>
+           <div className="flex gap-4">
+              <div className="glass px-4 py-2 rounded-2xl flex items-center gap-3 border-white/5">
+                 <Search size={18} className="text-white/20" />
+                 <input type="text" placeholder="Search transactions..." className="bg-transparent border-none focus:ring-0 text-sm w-48" />
+              </div>
+              <button className="w-10 h-10 rounded-2xl glass flex items-center justify-center text-white/50"><Filter size={18} /></button>
+           </div>
+        </header>
+
+        {/* Big Balance Card */}
+        <section className="grid grid-cols-12 gap-8">
+           <div className="col-span-12 lg:col-span-7 h-80 rounded-[40px] bg-neon-gradient p-10 relative overflow-hidden group shadow-[0_0_50px_rgba(0,245,255,0.2)]">
+              <div className="absolute top-[-50%] right-[-10%] w-96 h-96 bg-white/20 rounded-full blur-[100px] group-hover:scale-110 transition-transform duration-1000" />
+              <div className="relative z-10 flex flex-col h-full">
+                 <div className="text-white/70 text-sm font-bold uppercase tracking-widest mb-2">Total Managed Trust</div>
+                 <div className="text-6xl font-black mb-auto">¥1,240,456.50</div>
+                 <div className="flex items-center gap-4">
+                    <button className="px-8 py-3 rounded-2xl bg-black text-white text-sm font-bold hover:bg-black/80 transition-all">Transfer Funds</button>
+                    <button className="px-8 py-3 rounded-2xl bg-white/20 text-white text-sm font-bold backdrop-blur-md border border-white/10 hover:bg-white/30 transition-all">Add Limit</button>
+                 </div>
+              </div>
+           </div>
+
+           <div className="col-span-12 lg:col-span-5 grid grid-rows-2 gap-8">
+              <div className="glass-card flex justify-between items-center px-10">
+                 <div>
+                    <div className="text-white/30 text-[10px] font-bold uppercase mb-1">Weekly Income</div>
+                    <div className="text-3xl font-black">+¥24,456</div>
+                 </div>
+                 <div className="w-14 h-14 rounded-full bg-accent-green/20 flex items-center justify-center text-accent-green"><TrendingUp size={24} /></div>
+              </div>
+              <div className="glass-card flex justify-between items-center px-10">
+                 <div>
+                    <div className="text-white/30 text-[10px] font-bold uppercase mb-1">Weekly Expenses</div>
+                    <div className="text-3xl font-black">-¥11,124</div>
+                 </div>
+                 <div className="w-14 h-14 rounded-full bg-accent-pink/20 flex items-center justify-center text-accent-pink"><Clock size={24} /></div>
+              </div>
+           </div>
+        </section>
+
+        {/* Pending Requests */}
+        <section className="space-y-6">
+           <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-black">Pending Requests</h2>
+              <RiskBadge level="medium" score={45} />
+           </div>
+           <div className="grid gap-6">
+              <AnimatePresence mode="popLayout">
+                {approvals.map((app) => (
+                  <ApprovalCard 
+                    key={app.id} 
+                    {...app} 
+                    onApprove={() => setApprovals(p => p.filter(x => x.id !== app.id))}
+                    onReject={() => setApprovals(p => p.filter(x => x.id !== app.id))}
+                  />
+                ))}
+              </AnimatePresence>
+           </div>
+        </section>
+      </main>
+
+      {/* 3. RIGHT STATS SIDEBAR */}
+      <aside className="hidden xl:flex flex-col gap-8 w-96">
+         
+         {/* Cards Management */}
+         <div className="glass-card overflow-hidden">
+            <div className="flex justify-between items-center mb-8">
+               <h3 className="font-bold">Family Cards <span className="text-white/20 ml-2">3</span></h3>
+               <button className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/50"><Plus size={16} /></button>
             </div>
-          </div>
-        </motion.div>
-
-        {/* Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Pending Approvals */}
-          <div className="lg:col-span-2 space-y-6">
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center justify-between"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[rgb(25_35_75)] flex items-center justify-center">
-                  <Clock size={18} className="text-white" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-[rgb(25_35_75)]">
-                    Pending Approvals
-                  </h2>
-                  <p className="text-xs text-[rgb(25_35_75_/_0.5)]">
-                    {pendingCount} request{pendingCount !== 1 ? "s" : ""} awaiting review
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <RiskBadge
-                  level={
-                    avgRiskScore < 30
-                      ? "low"
-                      : avgRiskScore < 60
-                      ? "medium"
-                      : "high"
-                  }
-                  score={avgRiskScore}
-                />
-              </div>
-            </motion.div>
-
-            <AnimatePresence mode="popLayout">
-              {approvals.length > 0 ? (
-                <div className="space-y-4">
-                  {approvals.map((approval, i) => (
-                    <motion.div
-                      key={approval.id}
-                      layout
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                      transition={{ delay: i * 0.05 }}
-                    >
-                      <ApprovalCard
-                        id={approval.id}
-                        seniorName={approval.seniorName}
-                        merchant={approval.merchant}
-                        amount={approval.amount}
-                        intent={approval.intent}
-                        riskScore={approval.riskScore}
-                        timestamp={approval.timestamp}
-                        onApprove={() => handleAction(approval.id, "approved")}
-                        onReject={() => handleAction(approval.id, "rejected")}
-                      />
-                    </motion.div>
-                  ))}
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-12 text-center"
-                >
-                  <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-4">
-                    <CheckCircle2 size={32} className="text-green-500" />
+            
+            <div className="relative h-48 mb-8">
+               {/* Stacked Cards Effect */}
+               <div className="absolute top-0 left-0 w-full h-full rounded-3xl bg-gradient-to-br from-accent-pink to-secondary transform rotate-[-2deg] opacity-50 translate-y-[-10px]" />
+               <div className="absolute top-0 left-0 w-full h-full rounded-3xl bg-gradient-to-br from-primary to-primary-neon p-6 shadow-2xl">
+                  <div className="flex justify-between items-start mb-10">
+                     <div className="w-10 h-6 bg-white/20 rounded" />
+                     <div className="text-xs font-bold tracking-widest">VISA</div>
                   </div>
-                  <h3 className="text-lg font-semibold text-[rgb(25_35_75)] mb-1">
-                    All Caught Up!
-                  </h3>
-                  <p className="text-sm text-[rgb(25_35_75_/_0.5)] max-w-xs mx-auto">
-                    All pending requests have been reviewed. New requests will
-                    appear here automatically.
-                  </p>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
-            {/* Spending Overview */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-5"
-            >
-              <div className="flex items-center gap-2.5 mb-5">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center">
-                  <Wallet size={16} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-[rgb(25_35_75)]">
-                    Spending Overview
-                  </h3>
-                  <p className="text-xs text-[rgb(25_35_75_/_0.4)]">Today's activity</p>
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                {/* Daily Spend */}
-                <div>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-[rgb(25_35_75_/_0.6)]">Daily Spend</span>
-                    <span className="font-semibold text-[rgb(25_35_75)]">
-                      ¥{dailySpend.toLocaleString()} / ¥{dailyLimit.toLocaleString()}
-                    </span>
+                  <div className="text-xl font-medium tracking-[4px] mb-2">**** **** **** 6902</div>
+                  <div className="flex justify-between items-end">
+                     <div className="text-[10px] text-white/50">MICKY LARSON</div>
+                     <div className="text-[10px] text-white/50">07/25</div>
                   </div>
-                  <div className="h-2 bg-[rgb(25_35_75_/_0.06)] rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{
-                        width: `${Math.min((dailySpend / dailyLimit) * 100, 100)}%`,
-                      }}
-                      transition={{ duration: 1, ease: "easeOut" }}
-                      className={`h-full rounded-full ${
-                        dailySpend / dailyLimit > 0.8
-                          ? "bg-red-500"
-                          : dailySpend / dailyLimit > 0.5
-                          ? "bg-amber-500"
-                          : "bg-green-500"
-                      }`}
-                    />
-                  </div>
-                </div>
+               </div>
+            </div>
 
-                {/* Monthly Spend */}
-                <div>
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-[rgb(25_35_75_/_0.6)]">Monthly Spend</span>
-                    <span className="font-semibold text-[rgb(25_35_75)]">
-                      ¥{monthlySpend.toLocaleString()} / ¥{monthlyLimit.toLocaleString()}
-                    </span>
+            <div className="space-y-4">
+               <h4 className="text-[10px] font-bold uppercase text-white/20 tracking-widest">Spending Summary</h4>
+               <RiskScoreBar score={45} />
+               <div className="grid grid-cols-3 gap-2">
+                  <div className="p-3 rounded-2xl bg-white/5 text-center">
+                     <div className="text-lg font-black text-accent-green">2</div>
+                     <div className="text-[8px] text-white/30 uppercase">Low</div>
                   </div>
-                  <div className="h-2 bg-[rgb(25_35_75_/_0.06)] rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{
-                        width: `${Math.min(
-                          (monthlySpend / monthlyLimit) * 100,
-                          100
-                        )}%`,
-                      }}
-                      transition={{ duration: 1, ease: "easeOut", delay: 0.2 }}
-                      className={`h-full rounded-full ${
-                        monthlySpend / monthlyLimit > 0.8
-                          ? "bg-red-500"
-                          : monthlySpend / monthlyLimit > 0.5
-                          ? "bg-amber-500"
-                          : "bg-blue-500"
-                      }`}
-                    />
+                  <div className="p-3 rounded-2xl bg-white/5 text-center">
+                     <div className="text-lg font-black text-accent-orange">1</div>
+                     <div className="text-[8px] text-white/30 uppercase">Med</div>
                   </div>
-                </div>
-              </div>
+                  <div className="p-3 rounded-2xl bg-white/5 text-center">
+                     <div className="text-lg font-black text-accent-pink">1</div>
+                     <div className="text-[8px] text-white/30 uppercase">High</div>
+                  </div>
+               </div>
+            </div>
+         </div>
 
-              {/* Controls */}
-              <div className="mt-5 pt-4 border-t border-[rgb(25_35_75_/_0.06)]">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-medium text-[rgb(25_35_75_/_0.5)]">
-                    Daily Limit
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        setDailyLimit((p) => Math.max(1000, p - 1000))
-                      }
-                      className="w-7 h-7 rounded-lg bg-[rgb(25_35_75_/_0.05)] flex items-center justify-center text-xs font-bold text-[rgb(25_35_75_/_0.5)] hover:bg-[rgb(25_35_75_/_0.1)] transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="text-sm font-semibold text-[rgb(25_35_75)] w-16 text-center">
-                      ¥{dailyLimit.toLocaleString()}
-                    </span>
-                    <button
-                      onClick={() => setDailyLimit((p) => Math.min(50000, p + 1000))}
-                      className="w-7 h-7 rounded-lg bg-[rgb(25_35_75_/_0.05)] flex items-center justify-center text-xs font-bold text-[rgb(25_35_75_/_0.5)] hover:bg-[rgb(25_35_75_/_0.1)] transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-[rgb(25_35_75_/_0.5)]">
-                    Monthly Limit
-                  </span>
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() =>
-                        setMonthlyLimit((p) => Math.max(10000, p - 5000))
-                      }
-                      className="w-7 h-7 rounded-lg bg-[rgb(25_35_75_/_0.05)] flex items-center justify-center text-xs font-bold text-[rgb(25_35_75_/_0.5)] hover:bg-[rgb(25_35_75_/_0.1)] transition-all"
-                    >
-                      -
-                    </button>
-                    <span className="text-sm font-semibold text-[rgb(25_35_75)] w-20 text-center">
-                      ¥{monthlyLimit.toLocaleString()}
-                    </span>
-                    <button
-                      onClick={() =>
-                        setMonthlyLimit((p) => Math.min(200000, p + 5000))
-                      }
-                      className="w-7 h-7 rounded-lg bg-[rgb(25_35_75_/_0.05)] flex items-center justify-center text-xs font-bold text-[rgb(25_35_75_/_0.5)] hover:bg-[rgb(25_35_75_/_0.1)] transition-all"
-                    >
-                      +
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+         {/* Subscriptions / Integrations */}
+         <div className="glass-card">
+            <h3 className="font-bold mb-6">Linked Accounts</h3>
+            <div className="space-y-4">
+               {[
+                 { name: "Medicare App", price: "Active", icon: Shield, color: "bg-accent-green" },
+                 { name: "Amazon Pharmacy", price: "Linked", icon: CreditCard, color: "bg-primary-neon" },
+                 { name: "System Fax", price: "+18139...", icon: History, color: "bg-accent-pink" }
+               ].map((s, i) => (
+                 <div key={i} className="flex items-center justify-between p-3 rounded-2xl bg-white/5 border border-white/5">
+                    <div className="flex items-center gap-3">
+                       <div className={`w-10 h-10 rounded-xl ${s.color}/10 flex items-center justify-center text-white`}><s.icon size={18} /></div>
+                       <span className="text-sm font-bold">{s.name}</span>
+                    </div>
+                    <span className="text-xs font-bold text-white/30">{s.price}</span>
+                 </div>
+               ))}
+            </div>
+         </div>
 
-            {/* Risk Summary */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-5"
-            >
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center">
-                  <Shield size={16} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-[rgb(25_35_75)]">
-                    Risk Summary
-                  </h3>
-                  <p className="text-xs text-[rgb(25_35_75_/_0.4)]">Pending requests</p>
-                </div>
-              </div>
+         {/* Alert Center */}
+         <div className="glass-card bg-accent-pink/5 border-accent-pink/20">
+            <div className="flex items-center gap-3 mb-4 text-accent-pink">
+               <Bell size={20} className="animate-bounce" />
+               <h3 className="font-bold">Security Alert</h3>
+            </div>
+            <p className="text-xs text-white/50 leading-relaxed">
+               Unusual fax detected from <span className="text-white">Al-Noor Center</span>. Risk score: 78%. Manual approval required.
+            </p>
+         </div>
 
-              <RiskScoreBar score={avgRiskScore} />
+      </aside>
 
-              <div className="grid grid-cols-3 gap-2 mt-4">
-                <div className="bg-green-50 rounded-lg p-3 text-center">
-                  <span className="text-lg font-bold text-green-700">
-                    {approvals.filter((a) => a.riskScore < 30).length}
-                  </span>
-                  <p className="text-xs text-green-600 mt-0.5">Low</p>
-                </div>
-                <div className="bg-amber-50 rounded-lg p-3 text-center">
-                  <span className="text-lg font-bold text-amber-700">
-                    {approvals.filter(
-                      (a) => a.riskScore >= 30 && a.riskScore < 60
-                    ).length}
-                  </span>
-                  <p className="text-xs text-amber-600 mt-0.5">Medium</p>
-                </div>
-                <div className="bg-red-50 rounded-lg p-3 text-center">
-                  <span className="text-lg font-bold text-red-700">
-                    {highRiskCount}
-                  </span>
-                  <p className="text-xs text-red-600 mt-0.5">High</p>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Quick Stats */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-5"
-            >
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                  <TrendingUp size={16} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-[rgb(25_35_75)]">
-                    Quick Stats
-                  </h3>
-                  <p className="text-xs text-[rgb(25_35_75_/_0.4)]">Today's activity</p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between py-2 px-3 bg-[rgb(25_35_75_/_0.03)] rounded-lg">
-                  <div className="flex items-center gap-2.5">
-                    <Clock size={14} className="text-[rgb(25_35_75_/_0.4)]" />
-                    <span className="text-sm text-[rgb(25_35_75_/_0.6)]">
-                      Pending
-                    </span>
-                  </div>
-                  <span className="font-bold text-[rgb(25_35_75)]">
-                    {pendingCount}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 px-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-2.5">
-                    <CheckCircle2 size={14} className="text-green-500" />
-                    <span className="text-sm text-green-700">Approved</span>
-                  </div>
-                  <span className="font-bold text-green-700">
-                    {approvedToday}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 px-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-2.5">
-                    <XCircle size={14} className="text-red-500" />
-                    <span className="text-sm text-red-700">Rejected</span>
-                  </div>
-                  <span className="font-bold text-red-700">
-                    {rejectedToday}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between py-2 px-3 bg-[rgb(25_35_75_/_0.03)] rounded-lg">
-                  <div className="flex items-center gap-2.5">
-                    <Wallet size={14} className="text-[rgb(25_35_75_/_0.4)]" />
-                    <span className="text-sm text-[rgb(25_35_75_/_0.6)]">
-                      Total Spent
-                    </span>
-                  </div>
-                  <span className="font-bold text-[rgb(25_35_75)]">
-                    ¥{(dailySpend + monthlySpend).toLocaleString()}
-                  </span>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Notification Settings */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-5"
-            >
-              <div className="flex items-center gap-2.5 mb-4">
-                <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-cyan-500 to-teal-500 flex items-center justify-center">
-                  <Bell size={16} className="text-white" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-sm text-[rgb(25_35_75)]">
-                    Notifications
-                  </h3>
-                  <p className="text-xs text-[rgb(25_35_75_/_0.4)]">
-                    Manage your alerts
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <Bell
-                      size={16}
-                      className={
-                        notifications
-                          ? "text-teal-500"
-                          : "text-[rgb(25_35_75_/_0.3)]"
-                      }
-                    />
-                    <span className="text-sm text-[rgb(25_35_75)]">
-                      Push Notifications
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setNotifications(!notifications)}
-                    className={`relative w-11 h-6 rounded-full transition-all ${
-                      notifications ? "bg-teal-500" : "bg-[rgb(25_35_75_/_0.15)]"
-                    }`}
-                  >
-                    <motion.div
-                      animate={{ x: notifications ? 20 : 2 }}
-                      transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                      className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center justify-between opacity-50">
-                  <div className="flex items-center gap-2.5">
-                    <Sliders
-                      size={16}
-                      className="text-[rgb(25_35_75_/_0.3)]"
-                    />
-                    <span className="text-sm text-[rgb(25_35_75)]">
-                      SMS Alerts
-                    </span>
-                  </div>
-                  <span className="text-xs text-[rgb(25_35_75_/_0.3)]">Soon</span>
-                </div>
-
-                <div className="flex items-center justify-between opacity-50">
-                  <div className="flex items-center gap-2.5">
-                    <BellOff
-                      size={16}
-                      className="text-[rgb(25_35_75_/_0.3)]"
-                    />
-                    <span className="text-sm text-[rgb(25_35_75)]">
-                      Quiet Hours
-                    </span>
-                  </div>
-                  <span className="text-xs text-[rgb(25_35_75_/_0.3)]">Soon</span>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

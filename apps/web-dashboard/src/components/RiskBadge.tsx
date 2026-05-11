@@ -1,47 +1,44 @@
-"use client";
-
-import { motion } from "framer-motion";
-
-type RiskLevel = "low" | "medium" | "high";
+import React from 'react';
 
 interface RiskBadgeProps {
-  level: RiskLevel;
-  score?: number;
+  level: 'low' | 'medium' | 'high';
+  score: number;
 }
 
-const config = {
-  low: { bg: "bg-green-50", text: "text-green-700", dot: "bg-green-500", label: "Low Risk" },
-  medium: { bg: "bg-amber-50", text: "text-amber-700", dot: "bg-amber-500", label: "Medium Risk" },
-  high: { bg: "bg-red-50", text: "text-red-700", dot: "bg-red-500", label: "High Risk" },
+export const RiskBadge: React.FC<RiskBadgeProps> = ({ level, score }) => {
+  const colors = {
+    low: 'text-accent-green bg-accent-green/10 border-accent-green/20',
+    medium: 'text-accent-orange bg-accent-orange/10 border-accent-orange/20',
+    high: 'text-accent-pink bg-accent-pink/10 border-accent-pink/20',
+  };
+
+  return (
+    <div className={`px-4 py-2 rounded-full border text-xs font-black uppercase tracking-tighter flex items-center gap-2 ${colors[level]}`}>
+      <div className={`w-2 h-2 rounded-full animate-pulse ${level === 'low' ? 'bg-accent-green' : level === 'medium' ? 'bg-accent-orange' : 'bg-accent-pink'}`} />
+      {level} Risk · {score}%
+    </div>
+  );
 };
 
-export function RiskBadge({ level, score }: RiskBadgeProps) {
-  const c = config[level];
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${c.bg} ${c.text}`}>
-      <span className={`w-1.5 h-1.5 rounded-full ${c.dot}`} />
-      {c.label}
-      {score !== undefined && <span className="opacity-60">· {score}%</span>}
-    </span>
-  );
-}
+export const RiskScoreBar: React.FC<{ score: number }> = ({ score }) => {
+  const getColor = () => {
+    if (score < 30) return 'bg-accent-green';
+    if (score < 60) return 'bg-accent-orange';
+    return 'bg-accent-pink';
+  };
 
-export function RiskScoreBar({ score }: { score: number }) {
-  const color = score < 30 ? "bg-green-500" : score < 60 ? "bg-amber-500" : "bg-red-500";
   return (
-    <div className="space-y-1">
-      <div className="flex justify-between text-xs text-[rgb(25_35_75_/_0.5)]">
-        <span>Risk Score</span>
-        <span>{score}%</span>
+    <div className="w-full space-y-2">
+      <div className="flex justify-between text-[10px] font-bold text-white/30 uppercase">
+        <span>Average Risk Score</span>
+        <span className="text-white">{score}%</span>
       </div>
-      <div className="h-1.5 bg-[rgb(25_35_75_/_0.08)] rounded-full overflow-hidden">
-        <motion.div
-          initial={{ width: 0 }}
-          animate={{ width: `${score}%` }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className={`h-full rounded-full ${color}`}
+      <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden p-0.5 border border-white/5">
+        <div 
+          className={`h-full rounded-full transition-all duration-1000 ${getColor()} shadow-[0_0_10px_rgba(255,255,255,0.2)]`}
+          style={{ width: `${score}%` }}
         />
       </div>
     </div>
   );
-}
+};

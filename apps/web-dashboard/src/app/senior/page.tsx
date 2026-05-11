@@ -2,179 +2,128 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { FileText, Send, Clock, CheckCircle, Search } from "lucide-react"
+import { FileText, Send, Clock, CheckCircle, Search, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
 const requests = [
-  {
-    id: 1,
-    merchant: "Pharmacy",
-    amount: "¥4,200",
-    date: "May 8, 2026",
-    status: "Completed" as const,
-  },
-  {
-    id: 2,
-    merchant: "Grocery Delivery",
-    amount: "¥8,500",
-    date: "May 7, 2026",
-    status: "Family Review" as const,
-  },
-  {
-    id: 3,
-    merchant: "Utility Bill",
-    amount: "¥12,000",
-    date: "May 5, 2026",
-    status: "Processing" as const,
-  },
+  { id: 1, merchant: "Pharmacy", amount: "¥4,200", date: "Today", status: "Completed" as const },
+  { id: 2, merchant: "Grocery Delivery", amount: "¥8,500", date: "May 7, 2026", status: "Family Review" as const },
+  { id: 3, merchant: "Utility Bill", amount: "¥12,000", date: "May 5, 2026", status: "Processing" as const },
 ]
 
 const statusConfig = {
-  Completed: { icon: CheckCircle, color: "text-green-500", bg: "bg-green-50", label: "Completed" },
-  "Family Review": { icon: Clock, color: "text-amber-500", bg: "bg-amber-50", label: "Family Review" },
-  Processing: { icon: Search, color: "text-blue-500", bg: "bg-blue-50", label: "Processing" },
-}
-
-function StatusBadge({ status }: { status: keyof typeof statusConfig }) {
-  const config = statusConfig[status]
-  const Icon = config.icon
-  return (
-    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ${config.bg} ${config.color}`}>
-      <Icon size={16} />
-      {config.label}
-    </span>
-  )
+  Completed: { icon: CheckCircle, color: "text-accent-green", bg: "bg-accent-green/10", label: "Completed" },
+  "Family Review": { icon: Clock, color: "text-accent-orange", bg: "bg-accent-orange/10", label: "Family Review" },
+  Processing: { icon: Search, color: "text-primary-neon", bg: "bg-primary-neon/10", label: "AI Processing" },
 }
 
 export default function SeniorPage() {
   const [text, setText] = useState("")
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#faf8f5" }}>
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        {/* Header */}
+    <div className="min-h-screen pt-32 pb-12 px-6">
+      <div className="max-w-2xl mx-auto">
+        
         <motion.div
-          initial={{ opacity: 0, y: -12 }}
+          initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
-          className="mb-10"
+          className="mb-12 flex justify-between items-end"
         >
-          <Link href="/" className="inline-flex items-center gap-2 text-sm" style={{ color: "rgb(25 35 75 / 0.5)" }}>
-            <FileText size={20} />
-            Faxi
-          </Link>
-          <h1 className="text-3xl font-bold mt-3" style={{ color: "rgb(25 35 75)" }}>
-            Senior Service
-          </h1>
-          <p className="text-base mt-1" style={{ color: "rgb(25 35 75 / 0.5)" }}>
-            Send us a request and we&apos;ll take care of it
-          </p>
+          <div>
+            <Link href="/" className="flex items-center gap-2 text-white/30 hover:text-white transition-all text-sm mb-4">
+              <ArrowLeft size={16} /> Back to Hub
+            </Link>
+            <h1 className="text-4xl font-black">Senior Service</h1>
+            <p className="text-white/40 mt-2">Write your request as if on paper. Our AI handles the rest.</p>
+          </div>
+          <div className="w-16 h-16 rounded-[20px] glass flex items-center justify-center text-primary-neon">
+            <FileText size={32} />
+          </div>
         </motion.div>
 
-        {/* Section 1 – Send a Request */}
+        {/* The "Digital Paper" Section */}
         <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut", delay: 0.1 }}
-          className="mb-12"
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          className="mb-16 relative"
         >
-          <h2 className="text-xl font-semibold mb-4" style={{ color: "rgb(25 35 75)" }}>
-            Send a Request
-          </h2>
-
-          <div
-            className="rounded-2xl p-2"
-            style={{ backgroundColor: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)" }}
-          >
-            <div
-              className="rounded-xl p-5"
-              style={{
-                backgroundImage: `
-                  linear-gradient(rgba(59, 130, 246, 0.08) 1px, transparent 1px)
-                `,
-                backgroundSize: "100% 32px",
-                backgroundColor: "#fffeff",
-                minHeight: 192,
-              }}
-            >
-              <label className="block text-sm font-medium mb-3" style={{ color: "rgb(25 35 75 / 0.6)" }}>
-                Write your request below
-              </label>
-              <textarea
-                value={text}
-                onChange={(e) => setText(e.target.value)}
-                placeholder="e.g. Please pay the pharmacy bill..."
-                rows={5}
-                className="w-full resize-none bg-transparent text-lg leading-8 outline-none"
-                style={{ color: "rgb(25 35 75)", lineHeight: "32px" }}
-              />
+          <div className="glass-card p-2 border-primary/20">
+            <div className="rounded-[24px] p-8 bg-white text-dark min-h-[300px] shadow-inner relative overflow-hidden">
+               {/* Paper Lines */}
+               <div className="absolute inset-0 pointer-events-none opacity-10" style={{
+                 backgroundImage: 'linear-gradient(#000 1.5px, transparent 1.5px)',
+                 backgroundSize: '100% 40px',
+                 marginTop: '45px'
+               }} />
+               
+               <label className="block text-[10px] font-black uppercase text-dark/30 tracking-widest mb-4 relative z-10">
+                 Analog Input Terminal
+               </label>
+               
+               <textarea
+                 value={text}
+                 onChange={(e) => setText(e.target.value)}
+                 placeholder="Example: Please pay the pharmacy bill for 12,500 Yen..."
+                 className="w-full bg-transparent border-none focus:ring-0 text-2xl font-medium text-dark leading-[40px] relative z-10 min-h-[200px] placeholder:text-dark/10"
+               />
             </div>
-
-            <div className="flex justify-end px-5 pb-4 pt-2">
-              <button
-                onClick={() => {
-                  if (!text.trim()) return;
-                  alert("Your request has been sent successfully! 📠");
-                  setText("");
-                }}
-                disabled={!text.trim()}
-                className={`inline-flex items-center gap-3 px-8 py-3 rounded-full text-white text-lg font-medium transition-all ${
-                  text.trim()
-                    ? "opacity-100 hover:opacity-90"
-                    : "opacity-50 cursor-not-allowed"
-                }`}
-                style={{ backgroundColor: "rgb(25 35 75)" }}
-              >
-                <Send size={20} />
-                Send via Fax
-              </button>
+            
+            <div className="p-4 flex justify-between items-center">
+               <div className="flex gap-2">
+                  <div className="w-3 h-3 rounded-full bg-primary-neon shadow-[0_0_10px_#00F5FF]" />
+                  <span className="text-[10px] font-bold text-white/30 uppercase tracking-widest">AI Ready</span>
+               </div>
+               <button
+                 onClick={() => { setText(""); alert("Fax transmitted! 📠"); }}
+                 disabled={!text.trim()}
+                 className={`btn-neon flex items-center gap-3 ${!text.trim() && 'opacity-20 cursor-not-allowed'}`}
+               >
+                 <Send size={20} /> Transmit Fax
+               </button>
             </div>
           </div>
         </motion.section>
 
-        {/* Section 2 – Your Requests */}
+        {/* Request History */}
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut", delay: 0.2 }}
+          transition={{ delay: 0.2 }}
         >
-          <h2 className="text-xl font-semibold mb-4" style={{ color: "rgb(25 35 75)" }}>
-            Your Requests
+          <h2 className="text-xl font-bold mb-6 flex items-center gap-2">
+            <History size={20} className="text-white/30" /> Transaction History
           </h2>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             {requests.map((req, i) => {
-              const StatusIcon = statusConfig[req.status].icon
+              const Config = statusConfig[req.status]
               return (
                 <motion.div
                   key={req.id}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.35, ease: "easeOut", delay: 0.25 + i * 0.08 }}
-                  className="rounded-2xl p-5"
-                  style={{ backgroundColor: "white", boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03)" }}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + i * 0.1 }}
+                  className="glass-card flex items-center justify-between p-5 group hover:border-primary/30"
                 >
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start gap-4">
-                      <div className={`rounded-xl p-3 ${statusConfig[req.status].bg}`}>
-                        <StatusIcon size={24} className={statusConfig[req.status].color} />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-medium" style={{ color: "rgb(25 35 75)" }}>
-                          {req.merchant}
-                        </h3>
-                        <p className="text-sm mt-0.5" style={{ color: "rgb(25 35 75 / 0.5)" }}>
-                          {req.amount} &middot; {req.date}
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-5">
+                    <div className={`w-14 h-14 rounded-2xl ${Config.bg} flex items-center justify-center text-white`}>
+                      <Config.icon size={24} className={Config.color} />
                     </div>
-                    <StatusBadge status={req.status} />
+                    <div>
+                      <h3 className="font-bold text-lg">{req.merchant}</h3>
+                      <p className="text-sm text-white/40 font-medium">{req.amount} &middot; {req.date}</p>
+                    </div>
+                  </div>
+                  <div className={`px-4 py-1.5 rounded-full ${Config.bg} ${Config.color} text-[10px] font-black uppercase tracking-widest`}>
+                    {Config.label}
                   </div>
                 </motion.div>
               )
             })}
           </div>
         </motion.section>
+
       </div>
     </div>
   )
