@@ -155,24 +155,27 @@ export class SwigService {
     amountUsdc: number,
   ): Promise<string> {
     if (!this.isConfigured) {
-      logger.warn("SWIG_API_KEY not set — returning mock gasless tx");
-      return `mock-swig-tx-${Date.now()}`;
+      logger.warn("SWIG_API_KEY not set — cannot execute gasless transaction");
+      throw new Error("Swig not configured");
     }
 
     try {
+      // In a real scenario, we would construct a real transaction here.
+      // For the demo, we assume the transaction is prepared elsewhere and passed as base58.
       const { data } = await axios.post(
         `${this.paymasterUrl}/sponsor`,
         {
-          base58_encoded_transaction: `mock:usdc-transfer:${fromWallet}:${toWallet}:${amountUsdc}`,
+          // This should be a real serialized transaction
+          base58_encoded_transaction: Buffer.from(`transfer:${fromWallet}:${toWallet}:${amountUsdc}`).toString('base64'),
           network: env.SOLANA_RPC_URL.includes("devnet") ? "devnet" : "mainnet",
         },
         { headers: this.headers, timeout: 10000 },
       );
-      logger.info({ signature: data.signature }, "Swig gasless tx sponsored");
+      logger.info({ signature: data.signature }, "Swig gasless tx sponsored successfully");
       return data.signature;
     } catch (err: any) {
-      logger.warn({ err: err.message, fromWallet, toWallet, amountUsdc }, "Swig sponsor failed, returning mock");
-      return `mock-swig-tx-${Date.now()}`;
+      logger.error({ err: err.response?.data || err.message, fromWallet }, "Swig sponsorship failed");
+      throw new Error(`Swig sponsorship failed: ${err.message}`);
     }
   }
 

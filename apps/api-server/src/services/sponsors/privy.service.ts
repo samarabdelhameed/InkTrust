@@ -21,16 +21,13 @@ export class PrivyService {
   }
 
   async provisionInvisibleWallet(userId: string) {
-    try {
-      const wallet = await this.createWallet();
-      if (wallet) {
-        logger.info({ userId, walletId: wallet.id, address: wallet.address }, "Privy wallet provisioned");
-        return { address: wallet.address, id: wallet.id };
-      }
-    } catch (error) {
-      logger.warn({ err: error, userId }, "Privy wallet provisioning failed, using mock");
+    const wallet = await this.createWallet();
+    if (wallet) {
+      logger.info({ userId, walletId: wallet.id, address: wallet.address }, "Privy wallet provisioned successfully");
+      return { address: wallet.address, id: wallet.id };
     }
-    return { address: "0xMockWalletAddress" };
+    logger.error({ userId }, "Failed to provision Privy wallet");
+    throw new Error("Privy wallet provisioning failed");
   }
 
   private async createWallet(chainType: string = "solana"): Promise<PrivyWallet | null> {

@@ -67,7 +67,7 @@ export class BlockchainClient {
       if (!this._program) throw new Error("Program not ready");
       return await (this._program.account as any).faxRequestState.fetch(pda);
     } catch {
-      return { owner: PublicKey.default, caregiver: PublicKey.default, amount: 0, intent_hash: new Uint8Array(32), is_approved: false, is_executed: false, created_at: 0, bump: 0 };
+      return { owner: PublicKey.default, caregiver: PublicKey.default, amount: 0, intent_hash: new Uint8Array(32), is_approved: false, isApproved: false, is_executed: false, isExecuted: false, created_at: 0, createdAt: 0, expires_at: 0, expiresAt: 0, bump: 0 };
     }
   }
 

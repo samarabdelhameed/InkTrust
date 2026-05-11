@@ -1,194 +1,232 @@
 "use client";
 
-import { useWallet } from "@solana/wallet-adapter-react";
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { useWorldId } from "../hooks/useWorldId";
-import { usePendingFaxes, useApproveFax, useSpendingSummary } from "../hooks/useFaxes";
-import { useMemo } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { ArrowRight, Sparkles, Shield, Users, Cpu, ChevronDown } from "lucide-react";
+import { AgentLogTerminal } from "../components/AgentLogTerminal";
 
-function PipelineStatus() {
-  const stages = [
-    { name: "Fax Received", icon: "📠", active: true },
-    { name: "AI Analysis", icon: "🧠", active: true },
-    { name: "Approval", icon: "⏳", active: true },
-    { name: "Blockchain", icon: "⛓️", active: false },
-    { name: "Receipt Sent", icon: "📨", active: false },
-  ];
+const personas = [
+  {
+    icon: Users,
+    title: "For Seniors",
+    desc: "Send handwritten fax requests — no apps, no passwords, no blockchain. Just write and send.",
+    color: "from-blue-500 to-indigo-500",
+    href: "/senior",
+  },
+  {
+    icon: Shield,
+    title: "For Families",
+    desc: "Review and approve requests from a simple dashboard. Set spending rules and get notified instantly.",
+    color: "from-green-500 to-emerald-500",
+    href: "/family",
+  },
+  {
+    icon: Cpu,
+    title: "For the System",
+    desc: "AI agents parse intent, assess risk, execute on Solana, and fax back receipts — fully autonomous.",
+    color: "from-purple-500 to-pink-500",
+    href: "/admin",
+  },
+];
 
+const steps = [
+  { num: "01", title: "Senior writes & faxes", desc: "Handwritten request sent via any fax machine or mobile fax app." },
+  { num: "02", title: "AI parses intent", desc: "Gemini extracts merchant, amount, and urgency. Circle detection identifies the family." },
+  { num: "03", title: "Family approves", desc: "Caregiver reviews risk score and approves with World ID + Solana wallet." },
+  { num: "04", title: "On-chain execution", desc: "Payment is executed via Swig/MoonPay. Receipt is faxed back automatically." },
+];
+
+export default function HomePage() {
   return (
-    <div className="col-span-full bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h2 className="text-lg font-semibold mb-4">📠 Live Fax Pipeline</h2>
-      <div className="flex items-center gap-4 overflow-x-auto py-4">
-        {stages.map((stage, i) => (
-          <div key={stage.name} className="flex items-center gap-2">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg ${
-              stage.active ? "bg-blue-900/50 border border-blue-700" : "bg-gray-800 border border-gray-700"
-            }`}>
-              <span>{stage.icon}</span>
-              <span className="text-sm whitespace-nowrap">{stage.name}</span>
-            </div>
-            {i < stages.length - 1 && (
-              <div className="w-8 h-0.5 bg-gray-700" />
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+    <div className="min-h-screen">
 
-function PendingApprovals() {
-  const { publicKey } = useWallet();
-  const { data: faxes, isLoading } = usePendingFaxes();
-  const approveMutation = useApproveFax();
-  const { IDKitWidget } = useWorldId();
-
-  return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h2 className="text-lg font-semibold mb-4">⏳ Pending Approvals</h2>
-      {isLoading ? (
-        <p className="text-gray-400">Loading...</p>
-      ) : faxes && faxes.length > 0 ? (
-        <div className="space-y-3 max-h-96 overflow-y-auto">
-          {faxes.map((fax) => (
-            <div key={fax.id} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-              <div className="flex justify-between items-start mb-2">
-                <span className="text-sm font-medium">{fax.merchant || "Unknown"}</span>
-                <span className={`text-xs px-2 py-0.5 rounded ${
-                  fax.urgency === "HIGH" ? "bg-red-900 text-red-200" :
-                  fax.urgency === "NORMAL" ? "bg-yellow-900 text-yellow-200" :
-                  "bg-green-900 text-green-200"
-                }`}>
-                  {fax.urgency}
-                </span>
-              </div>
-              <p className="text-gray-400 text-sm mb-1">{fax.intent}</p>
-              <div className="flex justify-between items-center">
-                <span className="text-blue-400 font-medium">¥{fax.amount?.toLocaleString() || "—"}</span>
-                <IDKitWidget>
-                  <button
-                    disabled={!publicKey || approveMutation.isPending}
-                    onClick={() => {
-                      if (publicKey) {
-                        approveMutation.mutate({ faxId: fax.id, walletAddress: publicKey.toString() });
-                      }
-                    }}
-                    className="px-4 py-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:cursor-not-allowed rounded-lg text-sm font-medium transition-colors"
-                  >
-                    {approveMutation.isPending ? "Approving..." : "Approve"}
-                  </button>
-                </IDKitWidget>
-              </div>
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(25_35_75)] via-[rgb(30_45_90)] to-[rgb(15_22_50)]" />
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: `radial-gradient(circle at 25px 25px, white 2px, transparent 0)`,
+          backgroundSize: '50px 50px'
+        }} />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-32">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className="max-w-3xl"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/10 mb-6">
+              <Sparkles size={14} className="text-amber-300" />
+              <span className="text-xs font-medium text-white/70">Analog to Onchain Bridge</span>
             </div>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight text-balance">
+              Turn handwritten faxes into{" "}
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 to-blue-400">
+                blockchain-secured
+              </span>{" "}
+              actions
+            </h1>
+            <p className="mt-6 text-lg text-white/60 max-w-xl leading-relaxed">
+              Faxi bridges the analog world to Solana. Seniors send fax requests, AI interprets them,
+              families approve with one click, and payments execute automatically on-chain.
+            </p>
+            <div className="flex flex-wrap gap-3 mt-8">
+              <Link href="/demo" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[rgb(25_35_75)] font-semibold text-sm hover:shadow-xl hover:shadow-white/10 transition-all">
+                See Live Demo
+                <ArrowRight size={16} />
+              </Link>
+              <Link href="/family" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-medium text-sm hover:bg-white/5 transition-all">
+                Family Dashboard
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-[#faf8f5] to-transparent" />
+      </section>
+
+      {/* HOW IT WORKS */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(25_35_75)]">How It Works</h2>
+          <p className="mt-4 text-[rgb(25_35_75_/_0.6)] max-w-lg mx-auto">
+            Four simple steps from handwritten fax to on-chain execution
+          </p>
+        </motion.div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {steps.map((step, i) => (
+            <motion.div
+              key={step.num}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              className="relative bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-6 card-hover"
+            >
+              <span className="text-4xl font-bold text-[rgb(25_35_75_/_0.06)]">{step.num}</span>
+              <h3 className="mt-2 font-semibold text-[rgb(25_35_75)]">{step.title}</h3>
+              <p className="mt-2 text-sm text-[rgb(25_35_75_/_0.5)] leading-relaxed">{step.desc}</p>
+            </motion.div>
           ))}
         </div>
-      ) : (
-        <p className="text-gray-400">No pending requests.</p>
-      )}
-    </div>
-  );
-}
+      </section>
 
-function SpendingOverview() {
-  const { data: spending } = useSpendingSummary();
+      {/* PERSONA CARDS */}
+      <section className="bg-white/50 border-y border-[rgb(25_35_75_/_0.04)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-24">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(25_35_75)]">Built for Everyone</h2>
+            <p className="mt-4 text-[rgb(25_35_75_/_0.6)] max-w-lg mx-auto">
+              Three user experiences, one unified system
+            </p>
+          </motion.div>
 
-  return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h2 className="text-lg font-semibold mb-4">💰 Spending Overview</h2>
-      {spending ? (
-        <div className="space-y-3">
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-400">Daily</span>
-              <span>¥{spending.dailySpend?.toLocaleString() || "0"} / ¥{spending.dailyLimit?.toLocaleString() || "3,000"}</span>
-            </div>
-            <div className="w-full bg-gray-800 rounded-full h-2">
-              <div className="bg-blue-500 rounded-full h-2 transition-all" style={{
-                width: `${Math.min((spending.dailySpend || 0) / (spending.dailyLimit || 3000) * 100, 100)}%`
-              }} />
-            </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-sm mb-1">
-              <span className="text-gray-400">Monthly</span>
-              <span>¥{spending.monthlySpend?.toLocaleString() || "0"} / ¥{spending.monthlyLimit?.toLocaleString() || "50,000"}</span>
-            </div>
-            <div className="w-full bg-gray-800 rounded-full h-2">
-              <div className="bg-green-500 rounded-full h-2 transition-all" style={{
-                width: `${Math.min((spending.monthlySpend || 0) / (spending.monthlyLimit || 50000) * 100, 100)}%`
-              }} />
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <p className="text-gray-400">Daily limit: ¥3,000</p>
-          <p className="text-gray-400">Spent today: ¥0</p>
-        </>
-      )}
-    </div>
-  );
-}
-
-function TrustSettings() {
-  const { IDKitWidget } = useWorldId();
-
-  return (
-    <div className="bg-gray-900 rounded-xl border border-gray-800 p-6">
-      <h2 className="text-lg font-semibold mb-4">🛡️ Trust Settings</h2>
-      <div className="space-y-4">
-        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-          <h3 className="text-sm font-medium mb-2">World ID Verification</h3>
-          <p className="text-gray-400 text-xs mb-3">Verify your identity to approve transactions on behalf of your family member.</p>
-          <IDKitWidget>
-            <button className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded-lg text-sm font-medium transition-colors">
-              Verify with World ID
-            </button>
-          </IDKitWidget>
-        </div>
-        <div className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-          <h3 className="text-sm font-medium mb-2">Spending Limits</h3>
-          <p className="text-gray-400 text-xs">Configure daily and monthly spending caps for agent transactions.</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default function DashboardPage() {
-  const { publicKey } = useWallet();
-
-  return (
-    <main className="min-h-screen bg-gray-950 text-white">
-      <header className="border-b border-gray-800 px-6 py-4">
-        <div className="flex items-center justify-between max-w-7xl mx-auto">
-          <h1 className="text-2xl font-bold">
-            🖋️ <span className="text-blue-400">Ink</span>Trust
-          </h1>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-400">Caregiver Dashboard</span>
-            <WalletMultiButton className="!bg-blue-600 !hover:bg-blue-700 !rounded-lg !text-sm" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {personas.map((persona, i) => {
+              const Icon = persona.icon;
+              return (
+                <motion.div
+                  key={persona.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <Link
+                    href={persona.href}
+                    className="block bg-white rounded-xl border border-[rgb(25_35_75_/_0.06)] p-8 card-hover h-full"
+                  >
+                    <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${persona.color} flex items-center justify-center mb-5`}>
+                      <Icon size={24} className="text-white" />
+                    </div>
+                    <h3 className="text-lg font-bold text-[rgb(25_35_75)] mb-2">{persona.title}</h3>
+                    <p className="text-sm text-[rgb(25_35_75_/_0.5)] leading-relaxed mb-4">{persona.desc}</p>
+                    <span className="inline-flex items-center gap-1 text-sm font-medium text-[rgb(25_35_75)]">
+                      Learn more <ArrowRight size={14} />
+                    </span>
+                  </Link>
+                </motion.div>
+              );
+            })}
           </div>
         </div>
-      </header>
+      </section>
 
-      <div className="max-w-7xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <PipelineStatus />
+      {/* LIVE DEMO PREVIEW */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-24">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-12"
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold text-[rgb(25_35_75)]">See It In Action</h2>
+          <p className="mt-4 text-[rgb(25_35_75_/_0.6)] max-w-lg mx-auto">
+            Watch AI agents process a fax request in real-time
+          </p>
+        </motion.div>
 
-        <PendingApprovals />
+        <AgentLogTerminal />
 
-        <SpendingOverview />
+        <div className="text-center mt-8">
+          <Link href="/demo" className="btn-primary">
+            Full Interactive Demo <ArrowRight size={16} />
+          </Link>
+        </div>
+      </section>
 
-        <TrustSettings />
+      {/* CTA */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-[rgb(25_35_75)] to-[rgb(15_22_50)]" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-24 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true }}
+          >
+            <h2 className="text-3xl sm:text-4xl font-bold text-white">
+              Ready to Bridge the Analog World?
+            </h2>
+            <p className="mt-4 text-white/60 max-w-md mx-auto">
+              Explore the full system — from fax input to on-chain approval
+            </p>
+            <div className="flex flex-wrap justify-center gap-3 mt-8">
+              <Link href="/demo" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-white text-[rgb(25_35_75)] font-semibold text-sm hover:shadow-xl transition-all">
+                Start Demo <ArrowRight size={16} />
+              </Link>
+              <Link href="/partners" className="inline-flex items-center gap-2 px-6 py-3 rounded-xl border border-white/20 text-white font-medium text-sm hover:bg-white/5 transition-all">
+                View Partners
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      </section>
 
-        {!publicKey && (
-          <div className="col-span-full bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
-            <p className="text-yellow-300 font-medium">
-              Connect your wallet to approve fax requests and manage spending.
+      {/* FOOTER */}
+      <footer className="bg-[rgb(15_22_50)] border-t border-white/5">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10 text-white text-xs font-bold">
+                F
+              </div>
+              <span className="text-white font-bold">Faxi</span>
+            </div>
+            <p className="text-xs text-white/30">
+              Built for Solana Renaissance · AI-Powered Analog-to-Onchain Bridge
             </p>
           </div>
-        )}
-      </div>
-    </main>
+        </div>
+      </footer>
+    </div>
   );
 }

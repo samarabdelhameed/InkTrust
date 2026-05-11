@@ -2,7 +2,7 @@ import { PublicKey } from "@solana/web3.js";
 
 let _programId: PublicKey;
 try {
-  _programId = new PublicKey("7rV2abnFpVCmE5GrF1bk2C5amL3TTeKz1GxJFLWoq5Tq");
+  _programId = new PublicKey("D8w7y2m9VywSfAMG48dgiroienfrX419wjESVxPyv4sR");
 } catch {
   _programId = PublicKey.default;
 }
