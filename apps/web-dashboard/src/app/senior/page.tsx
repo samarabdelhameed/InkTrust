@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { FileText, Send, Clock, CheckCircle, Search, ArrowLeft } from "lucide-react"
+import { FileText, Send, Clock, CheckCircle, Search, ArrowLeft, History } from "lucide-react"
 import Link from "next/link"
 
 const requests = [

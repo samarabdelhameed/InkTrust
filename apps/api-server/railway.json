@@ -1,0 +1,11 @@
+{
+  "build": {
+    "builder": "nixpacks",
+    "buildCommand": "npx pnpm install --no-frozen-lockfile && npx pnpm --filter api-server build"
+  },
+  "deploy": {
+    "startCommand": "npx tsx src/index.ts",
+    "healthcheckPath": "/api/v1/system/health",
+    "restartPolicyType": "on_failure"
+  }
+}

@@ -23,10 +23,16 @@ const statusIcons = {
   pending: { icon: FileText, color: "text-amber-600", bg: "bg-amber-50" },
 };
 
-const urgencyLevel = (u: string) => {
+const urgencyLevel = (u: string): 'high' | 'medium' | 'low' => {
   if (u === "high") return "high";
   if (u === "normal") return "medium";
   return "low";
+};
+
+const urgencyScore = (u: string): number => {
+  if (u === "high") return 85;
+  if (u === "normal") return 50;
+  return 20;
 };
 
 export function FaxCard({ merchant, amount, intent, urgency, status, timestamp, onApprove, onReject }: FaxCardProps) {
@@ -48,7 +54,7 @@ export function FaxCard({ merchant, amount, intent, urgency, status, timestamp, 
             <p className="text-xs text-[rgb(25_35_75_/_0.5)]">{timestamp}</p>
           </div>
         </div>
-        <RiskBadge level={urgencyLevel(urgency)} />
+        <RiskBadge level={urgencyLevel(urgency)} score={urgencyScore(urgency)} />
       </div>
 
       <div className="mb-3">

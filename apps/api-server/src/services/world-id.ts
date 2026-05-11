@@ -1,6 +1,6 @@
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
-import { dbService } from "db-schema";
+import { dbService } from "../db-service";
 
 interface WorldIdProof {
   merkle_root: string;

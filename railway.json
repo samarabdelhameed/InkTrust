@@ -1,0 +1,10 @@
+{
+  "build": {
+    "builder": "nixpacks"
+  },
+  "deploy": {
+    "startCommand": "cd apps/api-server && npx tsx src/index.ts",
+    "healthcheckPath": "/api/v1/system/health",
+    "restartPolicyType": "on_failure"
+  }
+}

@@ -2,7 +2,7 @@ import { Queue, Worker, QueueEvents } from 'bullmq';
 import IORedis from 'ioredis';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
-import { dbService } from 'db-schema';
+import { dbService } from '../db-service';
 import { storageService } from '../services';
 import { geminiService } from '../services/ai/gemini.service';
 import { encryptionService } from '../services/arcium';
