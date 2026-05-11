@@ -1,10 +1,11 @@
 {
+  "$schema": "https://railway.app/railway.schema.json",
   "build": {
-    "builder": "nixpacks"
+    "builder": "NIXPACKS",
+    "root": "apps/api-server"
   },
   "deploy": {
-    "startCommand": "cd apps/api-server && npx tsx src/index.ts",
-    "healthcheckPath": "/api/v1/system/health",
-    "restartPolicyType": "on_failure"
+    "startCommand": "npx tsx src/index.ts",
+    "restartPolicyType": "ON_FAILURE"
   }
 }

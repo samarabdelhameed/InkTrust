@@ -1,14 +1,19 @@
-class DatabaseService {
-  async logMCPExecution(_data: { faxJobId: string; toolName: string; input: any; output?: any; status: string; durationMs: number }) {
-    return null;
-  }
-  async createAuditReview(_data: { faxJobId: string; riskScore: number; moderatorAction?: string; moderatorNotes?: string }) {
-    return null;
-  }
-  async createVerification(_data: { userId: string; nullifierHash: string; merkleRoot: string; proof: string }) {
-    return null;
-  }
+
+export interface FaxRequest {
+  id: string;
+  sender_phone: string;
+  receiver_phone: string;
+  status: 'PENDING' | 'ANALYZING' | 'APPROVED' | 'REJECTED' | 'EXECUTED';
+  raw_text?: string;
+  intent_data?: any;
+  amount_jpy?: number;
+  solana_pda?: string;
+  created_at: Date;
 }
 
-export const dbService = new DatabaseService();
-export default dbService;
+export interface User {
+  id: string;
+  wallet_address?: string;
+  world_id_nullifier?: string;
+  role: 'SENIOR' | 'CAREGIVER';
+}
